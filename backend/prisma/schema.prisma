@@ -1,0 +1,120 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            Int            @id @default(autoincrement())
+  email         String         @unique
+  password      String
+  name          String
+  createdAt     DateTime       @default(now())
+  rooms         Room[]
+  invoices      Invoice[]
+  refreshTokens RefreshToken[]
+  settings      Settings?
+}
+
+model RefreshToken {
+  id        Int      @id @default(autoincrement())
+  token     String   @unique
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+}
+
+model Settings {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @unique
+  user      User     @relation(fields: [userId], references: [id])
+  shopName  String   @default("Nhà trọ")
+  address   String   @default("")
+  phone     String   @default("")
+  logoUrl   String?
+  updatedAt DateTime @updatedAt
+}
+
+enum RoomStatus {
+  AVAILABLE
+  OCCUPIED
+  MAINTENANCE
+}
+
+model Room {
+  id            Int        @id @default(autoincrement())
+  name          String
+  floor         Int?
+  area          Float?
+  baseRent      Int
+  electricPrice Int        @default(3500)
+  waterPrice    Int        @default(15000)
+  garbageFee    Int        @default(20000)
+  status        RoomStatus @default(AVAILABLE)
+  userId        Int
+  user          User       @relation(fields: [userId], references: [id])
+  tenants       Tenant[]
+  invoices      Invoice[]
+  createdAt     DateTime   @default(now())
+}
+
+model Tenant {
+  id          Int          @id @default(autoincrement())
+  name        String
+  phone       String
+  idCard      String?
+  roomId      Int
+  room        Room         @relation(fields: [roomId], references: [id])
+  moveInDate  DateTime
+  moveOutDate DateTime?
+  deposit     Int          @default(0)
+  active      Boolean      @default(true)
+  files       TenantFile[]
+  invoices    Invoice[]
+  createdAt   DateTime     @default(now())
+}
+
+model TenantFile {
+  id        Int      @id @default(autoincrement())
+  tenantId  Int
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  label     String
+  url       String
+  createdAt DateTime @default(now())
+}
+
+model Invoice {
+  id               Int       @id @default(autoincrement())
+  roomId           Int
+  room             Room      @relation(fields: [roomId], references: [id])
+  tenantId         Int
+  tenant           Tenant    @relation(fields: [tenantId], references: [id])
+  userId           Int
+  user             User      @relation(fields: [userId], references: [id])
+  month            Int
+  year             Int
+  baseRent         Int
+  electricityPrev  Int
+  electricityNow   Int
+  electricityPrice Int
+  waterPrev        Int
+  waterNow         Int
+  waterPrice       Int
+  garbageFee       Int
+  otherFees        Int       @default(0)
+  otherNote        String?
+  periodStart      DateTime
+  periodEnd        DateTime
+  totalAmount      Int
+  paid             Boolean   @default(false)
+  paidDate         DateTime?
+  paidAmount       Int?
+  note             String?
+  createdAt        DateTime  @default(now())
+
+  @@unique([roomId, tenantId, month, year])
+}
