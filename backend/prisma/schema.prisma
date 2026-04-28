@@ -29,14 +29,15 @@ model RefreshToken {
 }
 
 model Settings {
-  id        Int      @id @default(autoincrement())
-  userId    Int      @unique
-  user      User     @relation(fields: [userId], references: [id])
-  shopName  String   @default("Nhà trọ")
-  address   String   @default("")
-  phone     String   @default("")
-  logoUrl   String?
-  updatedAt DateTime @updatedAt
+  id          Int      @id @default(autoincrement())
+  userId      Int      @unique
+  user        User     @relation(fields: [userId], references: [id])
+  shopName    String   @default("Nhà trọ")
+  address     String   @default("")
+  phone       String   @default("")
+  logoUrl     String?
+  paymentInfo String?  // Optional payment/QR payload for invoice PDF
+  updatedAt   DateTime @updatedAt
 }
 
 enum RoomStatus {

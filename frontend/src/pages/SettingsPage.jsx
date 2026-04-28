@@ -12,7 +12,12 @@ export default function SettingsPage() {
   const [exportYear, setExportYear] = useState(new Date().getFullYear());
 
   if (settings && !form) {
-    setForm({ shopName: settings.shopName, address: settings.address, phone: settings.phone });
+    setForm({
+      shopName: settings.shopName,
+      address: settings.address,
+      phone: settings.phone,
+      paymentInfo: settings.paymentInfo || '',
+    });
   }
 
   const { mutate, isPending } = useMutation({
@@ -63,6 +68,18 @@ export default function SettingsPage() {
               />
             </div>
           ))}
+
+          <div>
+            <label className="block text-sm font-medium mb-1">Thông tin thanh toán / QR code</label>
+            <textarea
+              value={form?.paymentInfo || ''}
+              onChange={(e) => setForm({ ...form, paymentInfo: e.target.value })}
+              placeholder="Ví dụ: MB Bank 123456789 - Tên CK: Nguyen Van A\nHoặc nội dung QR MoMo/ZaloPay..."
+              rows={4}
+              className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+            />
+            <p className="text-xs text-muted-foreground mt-2">Nội dung này sẽ được in trên hóa đơn và mã QR sẽ được tạo tự động nếu có.</p>
+          </div>
           <button onClick={() => mutate(form)} disabled={isPending}
             className="flex items-center gap-2 px-5 py-2.5 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 disabled:opacity-60 shadow-sm">
             <Save size={15} /> {isPending ? 'Đang lưu...' : 'Lưu thay đổi'}
