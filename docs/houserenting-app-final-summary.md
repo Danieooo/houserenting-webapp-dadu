@@ -8,6 +8,7 @@ Dự án đã được phát triển và triển khai thành công 100%. Tài li
 - `docs/superpowers/specs/2026-04-21-houserenting-app-design.md` có spec dự án, data model và API design.
 - `docs/superpowers/plans/2026-04-21-houserenting-app-implementation.md` có kế hoạch triển khai và trạng thái task.
 - `docs/HOW-TO-START-A-NEW-PROJECT.md` là hướng dẫn quy trình tạo dự án mới nhưng không chứa hướng dẫn trực tiếp cho app hiện tại.
+- `docs/deployment-steps.md` chứa hướng dẫn deploy Render/Vercel và mở rộng cho A/R.
 
 > Ghi chú: Tài liệu chính cho dự án hiện đã có đầy đủ nội dung kỹ thuật và trạng thái; cần bổ sung README để dễ bắt đầu với dự án.
 
@@ -115,6 +116,8 @@ VITE_API_URL="https://houserenting-webapp-dadu.onrender.com/api"
 ```
 
 ## 6. Hướng Dẫn Bảo Trì & Cập Nhật Code
+
+Các bước deploy chi tiết đã được ghi trong `docs/deployment-steps.md`.
 
 Trong tương lai, nếu bạn muốn nâng cấp tính năng mới, quy trình sẽ như sau:
 1. Sửa code trên máy tính của bạn (Local).

@@ -2,7 +2,7 @@ import { useParams, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState, useRef } from 'react';
 import { toast } from 'sonner';
-import { getTenantApi, uploadTenantFileApi, deleteTenantFileApi } from '../services/api';
+import { getTenantApi, uploadTenantFileApi, deleteTenantFileApi, deleteTenantApi } from '../services/api';
 import { formatDate, formatCurrency } from '../lib/utils';
 import { ArrowLeft, Upload, Trash2, FileText, Image, ExternalLink } from 'lucide-react';
 
@@ -14,6 +14,17 @@ export default function TenantDetailPage() {
 
   const { data, isLoading } = useQuery({ queryKey: ['tenant', id], queryFn: () => getTenantApi(id) });
   const tenant = data?.data?.data;
+
+  const { mutate: moveOutTenant, isLoading: movingOut } = useMutation({
+    mutationFn: deleteTenantApi,
+    onSuccess: () => {
+      toast.success('Khách đã được chuyển sang phần đã rời đi');
+      qc.invalidateQueries(['tenant', id]);
+      qc.invalidateQueries(['tenants']);
+      qc.invalidateQueries(['rooms']);
+    },
+    onError: (e) => toast.error(e.response?.data?.message || 'Lỗi chuyển khách ra'),
+  });
 
   const { mutate: uploadFile, isPending: uploading } = useMutation({
     mutationFn: ({ formData }) => uploadTenantFileApi(id, formData),
@@ -36,6 +47,13 @@ export default function TenantDetailPage() {
     fileRef.current.value = '';
   };
 
+  const handleMoveOut = () => {
+    if (!tenant?.room?.name) return;
+    if (confirm(`Xác nhận chuyển ${tenant.name} rời khỏi phòng ${tenant.room.name}?`)) {
+      moveOutTenant(tenant.id);
+    }
+  };
+
   if (isLoading) return <div className="animate-pulse h-64 bg-gray-100 rounded-xl" />;
   if (!tenant) return <p className="text-muted-foreground">Không tìm thấy khách thuê.</p>;
 
@@ -48,6 +66,25 @@ export default function TenantDetailPage() {
           <p className="text-sm text-muted-foreground">Phòng: <Link to={`/rooms/${tenant.room?.id}`} className="text-primary hover:underline">{tenant.room?.name}</Link></p>
         </div>
       </div>
+
+      {tenant.room && (
+        <div className="bg-primary/5 border border-primary/20 rounded-2xl p-6 shadow-sm">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="text-xs uppercase tracking-[0.2em] text-primary font-semibold mb-2">Phòng đang ở</p>
+              <p className="text-3xl font-bold leading-tight">{tenant.room.name}</p>
+              <p className="text-sm text-muted-foreground mt-2">Bắt đầu thuê: {formatDate(tenant.moveInDate)}</p>
+              <p className="text-sm text-muted-foreground">Trạng thái: {tenant.active ? 'Đang thuê' : 'Đã rời đi'}</p>
+            </div>
+            {tenant.active && (
+              <button type="button" onClick={handleMoveOut} disabled={movingOut}
+                className="inline-flex items-center justify-center rounded-xl bg-red-600 px-5 py-3 text-sm font-semibold text-white hover:bg-red-700 disabled:opacity-60">
+                {movingOut ? 'Đang chuyển...' : 'Chuyển ra'}
+              </button>
+            )}
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="bg-white rounded-xl border p-6 shadow-sm space-y-3">

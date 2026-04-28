@@ -109,10 +109,10 @@ export default function TenantsPage() {
   const [filter, setFilter] = useState('true');
   const { data, isLoading } = useQuery({ queryKey: ['tenants', filter], queryFn: () => getTenantsApi({ active: filter }) });
   const qc = useQueryClient();
-  const { mutate: softDelete } = useMutation({
+  const { mutate: moveOut } = useMutation({
     mutationFn: deleteTenantApi,
-    onSuccess: () => { toast.success('Đã xóa khách thuê'); qc.invalidateQueries(['tenants']); qc.invalidateQueries(['rooms']); },
-    onError: (e) => toast.error(e.response?.data?.message || 'Lỗi xóa khách'),
+    onSuccess: () => { toast.success('Khách đã được chuyển sang phần đã rời đi'); qc.invalidateQueries(['tenants']); qc.invalidateQueries(['rooms']); },
+    onError: (e) => toast.error(e.response?.data?.message || 'Lỗi chuyển khách ra'),
   });
   const tenants = data?.data?.data || [];
 
@@ -198,9 +198,10 @@ export default function TenantsPage() {
                   <Edit2 size={13} />
                 </button>
                 {t.active && (
-                  <button onClick={() => { if (confirm(`Xóa khách ${t.name}?`)) softDelete(t.id); }}
+                  <button onClick={() => { if (confirm(`Xác nhận chuyển ${t.name} rời khỏi phòng ${t.room?.name || ''}?`)) moveOut(t.id); }}
                     className="px-3 py-2 border border-red-200 rounded-lg text-xs font-medium text-red-600 hover:bg-red-50 transition-colors">
                     <UserX size={13} />
+                    <span className="ml-1">Chuyển ra</span>
                   </button>
                 )}
               </div>

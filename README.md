@@ -8,6 +8,7 @@
 - `docs/HOW-TO-START-A-NEW-PROJECT.md` — Hướng dẫn quy trình tạo dự án mới theo phong cách Superpowers.
 - `docs/superpowers/specs/2026-04-21-houserenting-app-design.md` — Thiết kế spec của dự án.
 - `docs/superpowers/plans/2026-04-21-houserenting-app-implementation.md` — Kế hoạch triển khai và trạng thái thực thi.
+- `docs/deployment-steps.md` — Hướng dẫn deploy backend và frontend.
 
 ## Bắt đầu nhanh
 
