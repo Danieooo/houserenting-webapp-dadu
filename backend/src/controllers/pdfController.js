@@ -17,7 +17,10 @@ const findFontPath = () => {
     path.join(__dirname, '../../assets/fonts/NotoSans-Regular.ttf'),
     'C:\\Windows\\Fonts\\segoeui.ttf',
     'C:\\Windows\\Fonts\\arial.ttf',
+    '/usr/share/fonts/truetype/noto/NotoSans-Regular.ttf',
     '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf',
+    '/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf',
+    '/usr/share/fonts/truetype/freefont/FreeSans.ttf',
   ];
   return candidates.find((p) => fs.existsSync(p));
 };

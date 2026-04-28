@@ -3,6 +3,7 @@ const cors = require('cors');
 const dotenv = require('dotenv');
 const rateLimit = require('express-rate-limit');
 const { errorHandler, notFound } = require('./middlewares/errorHandler');
+const prisma = require('./config/db');
 
 dotenv.config();
 
@@ -27,5 +28,16 @@ app.use('/api/export', require('./routes/exportRoutes'));
 app.use(notFound);
 app.use(errorHandler);
 
+const ensureDatabaseSchema = async () => {
+  try {
+    await prisma.$executeRawUnsafe('ALTER TABLE "Settings" ADD COLUMN IF NOT EXISTS "paymentInfo" TEXT;');
+    console.log('✅ Database schema check complete: paymentInfo column is present.');
+  } catch (err) {
+    console.warn('⚠️ Unable to ensure paymentInfo column:', err.message || err);
+  }
+};
+
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT} [${process.env.NODE_ENV || 'development'}]`));
+ensureDatabaseSchema().then(() => {
+  app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT} [${process.env.NODE_ENV || 'development'}]`));
+});
