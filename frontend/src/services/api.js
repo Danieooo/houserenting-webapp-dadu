@@ -69,6 +69,7 @@ export const getTenantsApi = (params) => API.get('/tenants', { params });
 export const getTenantApi = (id) => API.get(`/tenants/${id}`);
 export const createTenantApi = (data) => API.post('/tenants', data);
 export const updateTenantApi = (id, data) => API.put(`/tenants/${id}`, data);
+export const moveOutTenantApi = (id) => API.put(`/tenants/${id}/move-out`);
 export const deleteTenantApi = (id) => API.delete(`/tenants/${id}`);
 export const uploadTenantFileApi = (id, formData) => API.post(`/tenants/${id}/files`, formData, { headers: { 'Content-Type': 'multipart/form-data' } });
 export const deleteTenantFileApi = (tenantId, fileId) => API.delete(`/tenants/${tenantId}/files/${fileId}`);

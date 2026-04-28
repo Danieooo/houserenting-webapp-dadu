@@ -2,9 +2,9 @@ import { useParams, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState, useRef } from 'react';
 import { toast } from 'sonner';
-import { getTenantApi, uploadTenantFileApi, deleteTenantFileApi, deleteTenantApi } from '../services/api';
+import { getTenantApi, uploadTenantFileApi, deleteTenantFileApi, deleteTenantApi, moveOutTenantApi } from '../services/api';
 import { formatDate, formatCurrency } from '../lib/utils';
-import { ArrowLeft, Upload, Trash2, FileText, Image, ExternalLink } from 'lucide-react';
+import { ArrowLeft, Upload, Trash2, FileText, Image, ExternalLink, UserX } from 'lucide-react';
 
 export default function TenantDetailPage() {
   const { id } = useParams();
@@ -16,7 +16,7 @@ export default function TenantDetailPage() {
   const tenant = data?.data?.data;
 
   const { mutate: moveOutTenant, isLoading: movingOut } = useMutation({
-    mutationFn: deleteTenantApi,
+    mutationFn: () => moveOutTenantApi(id),
     onSuccess: () => {
       toast.success('Khách đã được chuyển sang phần đã rời đi');
       qc.invalidateQueries(['tenant', id]);
@@ -24,6 +24,17 @@ export default function TenantDetailPage() {
       qc.invalidateQueries(['rooms']);
     },
     onError: (e) => toast.error(e.response?.data?.message || 'Lỗi chuyển khách ra'),
+  });
+
+  const { mutate: deleteTenant, isLoading: deletingTenant } = useMutation({
+    mutationFn: () => deleteTenantApi(id),
+    onSuccess: () => {
+      toast.success('Khách đã được xóa hoàn toàn');
+      qc.invalidateQueries(['tenant', id]);
+      qc.invalidateQueries(['tenants']);
+      qc.invalidateQueries(['rooms']);
+    },
+    onError: (e) => toast.error(e.response?.data?.message || 'Lỗi xóa khách'),
   });
 
   const { mutate: uploadFile, isPending: uploading } = useMutation({
@@ -76,12 +87,18 @@ export default function TenantDetailPage() {
               <p className="text-sm text-muted-foreground mt-2">Bắt đầu thuê: {formatDate(tenant.moveInDate)}</p>
               <p className="text-sm text-muted-foreground">Trạng thái: {tenant.active ? 'Đang thuê' : 'Đã rời đi'}</p>
             </div>
-            {tenant.active && (
-              <button type="button" onClick={handleMoveOut} disabled={movingOut}
-                className="inline-flex items-center justify-center rounded-xl bg-red-600 px-5 py-3 text-sm font-semibold text-white hover:bg-red-700 disabled:opacity-60">
-                {movingOut ? 'Đang chuyển...' : 'Chuyển ra'}
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+              {tenant.active && (
+                <button type="button" onClick={handleMoveOut} disabled={movingOut || deletingTenant}
+                  className="inline-flex items-center justify-center rounded-xl bg-red-600 px-5 py-3 text-sm font-semibold text-white hover:bg-red-700 disabled:opacity-60">
+                  {movingOut ? 'Đang chuyển...' : 'Chuyển ra'}
+                </button>
+              )}
+              <button type="button" onClick={() => { if (confirm(`Xác nhận xóa hoàn toàn khách ${tenant.name}?`)) deleteTenant(); }} disabled={movingOut || deletingTenant}
+                className="inline-flex items-center justify-center rounded-xl border border-red-200 bg-white px-5 py-3 text-sm font-semibold text-red-600 hover:bg-red-50 disabled:opacity-60">
+                {deletingTenant ? 'Đang xóa...' : 'Xóa hoàn toàn'}
               </button>
-            )}
+            </div>
           </div>
         </div>
       )}

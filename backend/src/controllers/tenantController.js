@@ -93,6 +93,22 @@ exports.updateTenant = async (req, res, next) => {
   } catch (err) { next(err); }
 };
 
+exports.moveOutTenant = async (req, res, next) => {
+  try {
+    const tenant = await prisma.tenant.findFirst({
+      where: { id: Number(req.params.id), room: { userId: req.user.id } },
+    });
+    if (!tenant) return res.status(404).json({ success: false, message: 'Khách thuê không tồn tại', code: 'TENANT_NOT_FOUND' });
+
+    await prisma.tenant.update({ where: { id: tenant.id }, data: { active: false } });
+    const activeTenants = await prisma.tenant.count({ where: { roomId: tenant.roomId, active: true } });
+    if (activeTenants === 0) {
+      await prisma.room.update({ where: { id: tenant.roomId }, data: { status: 'AVAILABLE' } });
+    }
+    res.json({ success: true, message: 'Khách đã được chuyển sang phần đã rời đi' });
+  } catch (err) { next(err); }
+};
+
 exports.deleteTenant = async (req, res, next) => {
   try {
     const tenant = await prisma.tenant.findFirst({
@@ -100,14 +116,18 @@ exports.deleteTenant = async (req, res, next) => {
     });
     if (!tenant) return res.status(404).json({ success: false, message: 'Khách thuê không tồn tại', code: 'TENANT_NOT_FOUND' });
 
-    // Soft delete
-    await prisma.tenant.update({ where: { id: tenant.id }, data: { active: false } });
-    // Check if any active tenants remain in the room
+    await prisma.$transaction([
+      prisma.tenantFile.deleteMany({ where: { tenantId: tenant.id } }),
+      prisma.invoice.deleteMany({ where: { tenantId: tenant.id } }),
+      prisma.tenant.delete({ where: { id: tenant.id } }),
+    ]);
+
     const activeTenants = await prisma.tenant.count({ where: { roomId: tenant.roomId, active: true } });
     if (activeTenants === 0) {
       await prisma.room.update({ where: { id: tenant.roomId }, data: { status: 'AVAILABLE' } });
     }
-    res.json({ success: true, message: 'Đã xóa khách thuê' });
+
+    res.json({ success: true, message: 'Đã xóa khách thuê hoàn toàn' });
   } catch (err) { next(err); }
 };
 

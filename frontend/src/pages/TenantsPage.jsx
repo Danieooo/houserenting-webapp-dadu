@@ -2,9 +2,9 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
-import { getTenantsApi, createTenantApi, updateTenantApi, deleteTenantApi, getRoomsApi } from '../services/api';
+import { getTenantsApi, createTenantApi, updateTenantApi, deleteTenantApi, moveOutTenantApi, getRoomsApi } from '../services/api';
 import { formatDate, formatCurrency } from '../lib/utils';
-import { Plus, Eye, UserX, Users, Edit2, Phone, Calendar } from 'lucide-react';
+import { Plus, Eye, UserX, Users, Edit2, Phone, Calendar, Trash2 } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -110,9 +110,14 @@ export default function TenantsPage() {
   const { data, isLoading } = useQuery({ queryKey: ['tenants', filter], queryFn: () => getTenantsApi({ active: filter }) });
   const qc = useQueryClient();
   const { mutate: moveOut } = useMutation({
-    mutationFn: deleteTenantApi,
+    mutationFn: (id) => moveOutTenantApi(id),
     onSuccess: () => { toast.success('Khách đã được chuyển sang phần đã rời đi'); qc.invalidateQueries(['tenants']); qc.invalidateQueries(['rooms']); },
     onError: (e) => toast.error(e.response?.data?.message || 'Lỗi chuyển khách ra'),
+  });
+  const { mutate: deleteTenant } = useMutation({
+    mutationFn: (id) => deleteTenantApi(id),
+    onSuccess: () => { toast.success('Khách đã được xóa hoàn toàn'); qc.invalidateQueries(['tenants']); qc.invalidateQueries(['rooms']); },
+    onError: (e) => toast.error(e.response?.data?.message || 'Lỗi xóa khách'),
   });
   const tenants = data?.data?.data || [];
 
@@ -199,11 +204,16 @@ export default function TenantsPage() {
                 </button>
                 {t.active && (
                   <button onClick={() => { if (confirm(`Xác nhận chuyển ${t.name} rời khỏi phòng ${t.room?.name || ''}?`)) moveOut(t.id); }}
-                    className="px-3 py-2 border border-red-200 rounded-lg text-xs font-medium text-red-600 hover:bg-red-50 transition-colors">
+                    className="px-3 py-2 border border-orange-200 rounded-lg text-xs font-medium text-orange-600 hover:bg-orange-50 transition-colors">
                     <UserX size={13} />
                     <span className="ml-1">Chuyển ra</span>
                   </button>
                 )}
+                <button onClick={() => { if (confirm(`Xác nhận xóa hoàn toàn khách ${t.name}?`)) deleteTenant(t.id); }}
+                  className="px-3 py-2 border border-red-200 rounded-lg text-xs font-medium text-red-600 hover:bg-red-50 transition-colors">
+                  <Trash2 size={13} />
+                  <span className="ml-1">Xóa</span>
+                </button>
               </div>
             </div>
           ))}
