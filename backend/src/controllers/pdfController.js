@@ -136,20 +136,34 @@ exports.getInvoicePdf = async (req, res, next) => {
       const qrBytes = await generateQrPngBytes(qrPayload);
       const qrImage = await pdfDoc.embedPng(qrBytes);
       const qrSize = 130;
-      const qrX = width - margin - qrSize;
-      const qrY = y - qrSize;
+      
+      // Căn giữa dòng chữ hướng dẫn quét mã
+      const title1 = 'Quét mã QR để thanh toán';
+      const title1W = font.widthOfTextAtSize(title1, 10);
+      drawText(page, title1, { x: (width - title1W) / 2, y, size: 10, font, color: rgb(0.1, 0.1, 0.1) });
+      
+      // Căn giữa hình ảnh mã QR
+      const qrX = (width - qrSize) / 2;
+      const qrY = y - qrSize - 12;
       page.drawImage(qrImage, { x: qrX, y: qrY, width: qrSize, height: qrSize });
 
-      drawText(page, 'Quét mã QR để thanh toán', { x: margin, y: qrY + qrSize - 2, size: 10, font, color: rgb(0.1, 0.1, 0.1) });
-      drawText(page, 'Hoặc chuyển khoản theo thông tin bên dưới:', { x: margin, y: qrY - 14, size: 9, font, color: rgb(0.1, 0.1, 0.1) });
+      // Căn giữa dòng chữ hướng dẫn chuyển khoản
+      const title2 = 'Hoặc chuyển khoản theo thông tin bên dưới:';
+      const title2W = font.widthOfTextAtSize(title2, 9);
+      drawText(page, title2, { x: (width - title2W) / 2, y: qrY - 18, size: 9, font, color: rgb(0.1, 0.1, 0.1) });
+
+      // Căn giữa từng dòng thông tin tài khoản chuyển khoản chi tiết
       const wrapped = qrPayload.split(/\r?\n/);
-      let textY = qrY - 30;
+      let textY = qrY - 32;
       wrapped.forEach((line) => {
-        drawText(page, line, { x: margin, y: textY, size: 9, font, color: rgb(0.2, 0.2, 0.2) });
+        const lineW = font.widthOfTextAtSize(line, 9);
+        drawText(page, line, { x: (width - lineW) / 2, y: textY, size: 9, font, color: rgb(0.2, 0.2, 0.2) });
         textY -= 12;
       });
     } else {
-      drawText(page, 'Quý khách vui lòng chuyển khoản theo thông tin tài khoản đã cung cấp.', { x: margin, y, size: 10, font, color: rgb(0.1, 0.1, 0.1) });
+      const fallbackText = 'Quý khách vui lòng chuyển khoản theo thông tin tài khoản đã cung cấp.';
+      const fallbackW = font.widthOfTextAtSize(fallbackText, 10);
+      drawText(page, fallbackText, { x: (width - fallbackW) / 2, y, size: 10, font, color: rgb(0.1, 0.1, 0.1) });
     }
 
     const pdfBytes = await pdfDoc.save();

@@ -64,13 +64,13 @@ function TenantForm({ onClose, initialData }) {
           ].map(({ label, name, placeholder }) => (
             <div key={name}>
               <label className="block text-sm font-medium mb-1">{label}</label>
-              <input {...register(name)} placeholder={placeholder} className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" />
+              <input {...register(name)} placeholder={placeholder} className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 outline-none" />
               {errors[name] && <p className="text-red-500 text-xs mt-1">{errors[name].message}</p>}
             </div>
           ))}
           <div>
             <label className="block text-sm font-medium mb-1">Phòng *</label>
-            <select {...register('roomId')} className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/30">
+            <select {...register('roomId')} className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 outline-none">
               <option value="">-- Chọn phòng --</option>
               {availableRooms.map(r => (
                 <option key={r.id} value={r.id}>
@@ -83,17 +83,17 @@ function TenantForm({ onClose, initialData }) {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium mb-1">Ngày vào ở *</label>
-              <input type="date" {...register('moveInDate')} className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" />
+              <input type="date" {...register('moveInDate')} className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 outline-none" />
               {errors.moveInDate && <p className="text-red-500 text-xs mt-1">{errors.moveInDate.message}</p>}
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">Ngày kết thúc</label>
-              <input type="date" {...register('moveOutDate')} className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" />
+              <input type="date" {...register('moveOutDate')} className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 outline-none" />
             </div>
           </div>
           <div>
             <label className="block text-sm font-medium mb-1">Tiền cọc (đ)</label>
-            <input type="number" {...register('deposit')} placeholder="0" className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" />
+            <input type="number" {...register('deposit')} placeholder="0" className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 outline-none" />
           </div>
           <div className="flex gap-3 pt-2">
             <button type="button" onClick={onClose} className="flex-1 px-4 py-2 border rounded-lg text-sm hover:bg-gray-50">Hủy</button>
@@ -165,7 +165,7 @@ export default function TenantsPage() {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {tenants.map((t) => (
-            <div key={t.id} className="bg-white rounded-xl border shadow-sm hover:shadow-md transition-shadow p-5 flex flex-col">
+            <div key={t.id} className="bg-white rounded-xl border shadow-sm hover:shadow-md hover:scale-[1.015] hover:border-primary/20 transition-all duration-300 ease-in-out p-5 flex flex-col">
               <div className="flex items-start justify-between mb-3">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-lg">

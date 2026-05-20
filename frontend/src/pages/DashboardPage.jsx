@@ -5,17 +5,17 @@ import { Link } from 'react-router-dom';
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { Building2, Users, TrendingUp, AlertCircle, Calendar, ArrowRight } from 'lucide-react';
 
-function StatCard({ title, value, subtitle, icon: Icon, color }) {
+function StatCard({ title, value, subtitle, icon: Icon, colorGradient }) {
   return (
-    <div className="bg-white rounded-xl border p-6 shadow-sm hover:shadow-md transition-shadow">
+    <div className="bg-white rounded-xl border border-gray-100 p-6 shadow-sm hover:shadow-md hover:scale-[1.015] hover:border-primary/20 transition-all duration-300 ease-in-out">
       <div className="flex items-start justify-between">
         <div>
           <p className="text-sm text-muted-foreground font-medium">{title}</p>
-          <p className="text-2xl font-bold mt-1">{value}</p>
-          {subtitle && <p className="text-xs text-muted-foreground mt-1">{subtitle}</p>}
+          <p className="text-2xl font-bold mt-1 tracking-tight">{value}</p>
+          {subtitle && <p className="text-xs text-muted-foreground/80 mt-1">{subtitle}</p>}
         </div>
-        <div className={`p-3 rounded-xl ${color}`}>
-          <Icon size={20} className="text-white" />
+        <div className={`p-3 rounded-xl bg-gradient-to-br ${colorGradient} shadow-sm text-white`}>
+          <Icon size={20} />
         </div>
       </div>
     </div>
@@ -49,21 +49,21 @@ export default function DashboardPage() {
           value={formatCurrency(summary.revenue || 0)}
           subtitle="Từ hóa đơn đã thu"
           icon={TrendingUp}
-          color="bg-green-500"
+          colorGradient="from-emerald-500 to-teal-600 shadow-emerald-100"
         />
         <StatCard
           title="Phòng có người"
           value={`${summary.occupied || 0} / ${summary.totalRooms || 0}`}
           subtitle={`${summary.available || 0} phòng trống`}
           icon={Building2}
-          color="bg-blue-500"
+          colorGradient="from-blue-500 to-indigo-600 shadow-blue-100"
         />
         <StatCard
           title="Chưa thu tiền"
           value={unpaid.length}
           subtitle="Hóa đơn tháng này"
           icon={AlertCircle}
-          color="bg-orange-500"
+          colorGradient="from-amber-500 to-orange-600 shadow-amber-100"
         />
       </div>
 

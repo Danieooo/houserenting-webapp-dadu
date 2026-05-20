@@ -64,7 +64,7 @@ export default function SettingsPage() {
                 value={form?.[key] || ''}
                 onChange={(e) => setForm({ ...form, [key]: e.target.value })}
                 placeholder={placeholder}
-                className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 outline-none"
               />
             </div>
           ))}
@@ -76,25 +76,25 @@ export default function SettingsPage() {
               onChange={(e) => setForm({ ...form, paymentInfo: e.target.value })}
               placeholder="Ví dụ: MB Bank 123456789 - Tên CK: Nguyen Van A\nHoặc nội dung QR MoMo/ZaloPay..."
               rows={4}
-              className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 outline-none"
             />
             <p className="text-xs text-muted-foreground mt-2">Nội dung này sẽ được in trên hóa đơn và mã QR sẽ được tạo tự động nếu có.</p>
           </div>
           <button onClick={() => mutate(form)} disabled={isPending}
-            className="flex items-center gap-2 px-5 py-2.5 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 disabled:opacity-60 shadow-sm">
+            className="flex items-center gap-2 px-5 py-2.5 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 disabled:opacity-60 shadow-sm active:scale-[0.98] transition-all duration-200">
             <Save size={15} /> {isPending ? 'Đang lưu...' : 'Lưu thay đổi'}
           </button>
         </div>
       </div>
 
       {/* Export */}
-      <div className="bg-white rounded-xl border p-6 shadow-sm">
+      <div className="bg-white rounded-xl border border-gray-100 p-6 shadow-sm">
         <h2 className="font-semibold mb-2">Xuất dữ liệu</h2>
         <p className="text-sm text-muted-foreground mb-4">Tải toàn bộ hóa đơn theo năm ra file CSV để backup hoặc phân tích.</p>
         <div className="flex items-center gap-3">
           <input type="number" value={exportYear} onChange={(e) => setExportYear(Number(e.target.value))}
-            className="w-28 px-3 py-2 border rounded-lg text-sm focus:outline-none" />
-          <button onClick={handleExport} className="flex items-center gap-2 px-4 py-2 border rounded-lg text-sm font-medium hover:bg-gray-50">
+            className="w-28 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 outline-none" />
+          <button onClick={handleExport} className="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-lg text-sm font-medium hover:bg-slate-50 hover:border-gray-300 active:scale-[0.98] transition-all duration-200">
             <Download size={14} /> Xuất CSV năm {exportYear}
           </button>
         </div>

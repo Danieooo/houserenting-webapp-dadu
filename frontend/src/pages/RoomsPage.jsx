@@ -62,7 +62,7 @@ function RoomForm({ onClose, onSuccess, initialData }) {
     <div>
       <label className="block text-sm font-medium mb-1">{label}</label>
       <input type={type} placeholder={placeholder} {...register(name)}
-        className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary" />
+        className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 outline-none" />
       {errors[name] && <p className="text-red-500 text-xs mt-1">{errors[name].message}</p>}
     </div>
   );
@@ -141,7 +141,7 @@ export default function RoomsPage() {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {rooms.map((room) => (
-            <div key={room.id} className="bg-white rounded-xl border shadow-sm hover:shadow-md transition-shadow p-5">
+            <div key={room.id} className="bg-white rounded-xl border shadow-sm hover:shadow-md hover:scale-[1.015] hover:border-primary/20 transition-all duration-300 ease-in-out p-5">
               <div className="flex items-start justify-between mb-3">
                 <div>
                   <h3 className="font-semibold text-base">{room.name}</h3>

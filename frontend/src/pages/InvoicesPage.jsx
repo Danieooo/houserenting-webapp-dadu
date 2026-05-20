@@ -141,20 +141,24 @@ export default function InvoicesPage() {
       </div>
 
       {/* Filters */}
-      <div className="flex flex-wrap gap-3 bg-white rounded-xl border p-4 shadow-sm">
-        <select value={filterMonth} onChange={(e) => setFilterMonth(e.target.value)} className="px-3 py-2 border rounded-lg text-sm focus:outline-none">
+      <div className="flex flex-wrap gap-3 bg-white rounded-xl border border-gray-100 p-4 shadow-sm">
+        <select value={filterMonth} onChange={(e) => setFilterMonth(e.target.value)} 
+          className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 outline-none bg-white">
           <option value="">Tất cả tháng</option>
           {Array.from({length: 12}, (_, i) => <option key={i+1} value={i+1}>Tháng {i+1}</option>)}
         </select>
         <input type="number" placeholder="Năm" value={filterYear} onChange={(e) => setFilterYear(e.target.value)}
-          className="w-24 px-3 py-2 border rounded-lg text-sm focus:outline-none" />
-        <select value={filterPaid} onChange={(e) => setFilterPaid(e.target.value)} className="px-3 py-2 border rounded-lg text-sm focus:outline-none">
-          <option value="">Tất cả</option>
+          className="w-24 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 outline-none" />
+        <select value={filterPaid} onChange={(e) => setFilterPaid(e.target.value)} 
+          className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 outline-none bg-white">
+          <option value="">Tất cả trạng thái</option>
           <option value="false">Chưa thu</option>
           <option value="true">Đã thu</option>
         </select>
         <button onClick={() => { setFilterMonth(''); setFilterYear(''); setFilterPaid(''); }}
-          className="px-3 py-2 border rounded-lg text-sm hover:bg-gray-50">Reset</button>
+          className="px-4 py-2 border border-gray-200 rounded-lg text-sm hover:bg-slate-50 hover:border-gray-300 font-medium active:scale-[0.98] transition-all duration-200">
+          Reset bộ lọc
+        </button>
       </div>
 
       {isLoading ? (
