@@ -34,7 +34,7 @@ function TenantForm({ onClose, initialData }) {
   });
   const qc = useQueryClient();
   const { data: roomsRes } = useQuery({ queryKey: ['rooms'], queryFn: getRoomsApi });
-  const availableRooms = (roomsRes?.data?.data || []).filter(r => r.status === 'AVAILABLE' || (initialData && r.id === initialData.roomId));
+  const availableRooms = (roomsRes?.data?.data || []).filter(r => r.status === 'AVAILABLE' || r.status === 'OCCUPIED' || (initialData && r.id === initialData.roomId));
 
   const { mutate, isPending } = useMutation({
     mutationFn: (data) => initialData ? updateTenantApi(initialData.id, data) : createTenantApi(data),
@@ -72,7 +72,11 @@ function TenantForm({ onClose, initialData }) {
             <label className="block text-sm font-medium mb-1">Phòng *</label>
             <select {...register('roomId')} className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/30">
               <option value="">-- Chọn phòng --</option>
-              {availableRooms.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
+              {availableRooms.map(r => (
+                <option key={r.id} value={r.id}>
+                  {r.name} {r.status === 'OCCUPIED' ? '(Đang ở - Ghép phòng)' : '(Trống)'}
+                </option>
+              ))}
             </select>
             {errors.roomId && <p className="text-red-500 text-xs mt-1">{errors.roomId.message}</p>}
           </div>

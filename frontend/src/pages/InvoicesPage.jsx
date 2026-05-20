@@ -56,20 +56,40 @@ function BulkCreateDialog({ onClose }) {
               return (
                 <div key={r.id} className="border p-3 rounded-xl text-sm flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between hover:bg-gray-50/50">
                    <div className="font-semibold text-primary">{r.name}</div>
-                   <div className="flex gap-4">
-                     <div className="flex items-center gap-2">
-                       <span className="text-xs text-muted-foreground w-12">Điện (Cũ: {prevE})</span>
-                       <input type="number" placeholder="Số mới" 
-                          className="w-20 border rounded-md px-2 py-1 focus:ring-1 focus:ring-primary outline-none"
-                          onChange={e => setReadings({...readings, [r.id]: {...readings[r.id], electricityNow: e.target.value}})} />
-                     </div>
-                     <div className="flex items-center gap-2">
-                       <span className="text-xs text-muted-foreground w-12">Nước (Cũ: {prevW})</span>
-                       <input type="number" placeholder="Số mới" 
-                          className="w-20 border rounded-md px-2 py-1 focus:ring-1 focus:ring-primary outline-none"
-                          onChange={e => setReadings({...readings, [r.id]: {...readings[r.id], waterNow: e.target.value}})} />
-                     </div>
-                   </div>
+                    <div className="flex flex-col sm:flex-row gap-3">
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-xs text-muted-foreground">Điện cũ:</span>
+                        <input type="number" defaultValue={prevE} 
+                           className="w-16 border rounded-md px-1.5 py-0.5 text-xs focus:ring-1 focus:ring-primary outline-none"
+                           onChange={e => {
+                             const current = readings[r.id] || {};
+                             setReadings({...readings, [r.id]: {...current, electricityPrev: e.target.value}});
+                           }} />
+                        <span className="text-xs text-muted-foreground ml-1">Mới:</span>
+                        <input type="number" placeholder="Số mới" 
+                           className="w-16 border rounded-md px-1.5 py-0.5 text-xs focus:ring-1 focus:ring-primary outline-none"
+                           onChange={e => {
+                             const current = readings[r.id] || {};
+                             setReadings({...readings, [r.id]: {...current, electricityNow: e.target.value}});
+                           }} />
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-xs text-muted-foreground">Nước cũ:</span>
+                        <input type="number" defaultValue={prevW} 
+                           className="w-16 border rounded-md px-1.5 py-0.5 text-xs focus:ring-1 focus:ring-primary outline-none"
+                           onChange={e => {
+                             const current = readings[r.id] || {};
+                             setReadings({...readings, [r.id]: {...current, waterPrev: e.target.value}});
+                           }} />
+                        <span className="text-xs text-muted-foreground ml-1">Mới:</span>
+                        <input type="number" placeholder="Số mới" 
+                           className="w-16 border rounded-md px-1.5 py-0.5 text-xs focus:ring-1 focus:ring-primary outline-none"
+                           onChange={e => {
+                             const current = readings[r.id] || {};
+                             setReadings({...readings, [r.id]: {...current, waterNow: e.target.value}});
+                           }} />
+                      </div>
+                    </div>
                 </div>
               );
             })}

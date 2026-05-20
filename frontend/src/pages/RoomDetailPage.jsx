@@ -44,12 +44,16 @@ export default function RoomDetailPage() {
           <h2 className="font-semibold mb-3">Khách thuê hiện tại</h2>
           {room.tenants?.length === 0 ? (
             <p className="text-sm text-muted-foreground">Phòng đang trống</p>
-          ) : room.tenants?.map((t) => (
-            <Link key={t.id} to={`/tenants/${t.id}`} className="block p-3 rounded-lg border hover:bg-gray-50 transition-colors">
-              <p className="font-medium text-sm">{t.name}</p>
-              <p className="text-xs text-muted-foreground">{t.phone}</p>
-            </Link>
-          ))}
+          ) : (
+            <div className="space-y-2">
+              {room.tenants?.map((t) => (
+                <Link key={t.id} to={`/tenants/${t.id}`} className="block p-3 rounded-lg border hover:bg-gray-50 transition-colors">
+                  <p className="font-medium text-sm">{t.name}</p>
+                  <p className="text-xs text-muted-foreground">{t.phone}</p>
+                </Link>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 

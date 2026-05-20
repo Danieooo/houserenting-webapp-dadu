@@ -51,8 +51,8 @@ exports.createTenant = async (req, res, next) => {
     }
     const room = await prisma.room.findFirst({ where: { id: Number(roomId), userId: req.user.id } });
     if (!room) return res.status(404).json({ success: false, message: 'Phòng không tồn tại', code: 'ROOM_NOT_FOUND' });
-    if (room.status === 'OCCUPIED') {
-      return res.status(400).json({ success: false, message: 'Phòng đã có người thuê', code: 'ROOM_OCCUPIED' });
+    if (room.status === 'MAINTENANCE') {
+      return res.status(400).json({ success: false, message: 'Phòng đang bảo trì, không thể thêm khách thuê', code: 'ROOM_MAINTENANCE' });
     }
     const tenant = await prisma.tenant.create({
       data: {

@@ -129,8 +129,8 @@ exports.bulkCreateInvoices = async (req, res, next) => {
         where: { roomId: room.id },
         orderBy: [{ year: 'desc' }, { month: 'desc' }],
       });
-      const electricityPrev = lastInvoice?.electricityNow ?? 0;
-      const waterPrev = lastInvoice?.waterNow ?? 0;
+      const dbElectricityPrev = lastInvoice?.electricityNow ?? 0;
+      const dbWaterPrev = lastInvoice?.waterNow ?? 0;
 
       // Kiểm tra đã tồn tại chưa
       const existing = await prisma.invoice.findFirst({
@@ -141,6 +141,12 @@ exports.bulkCreateInvoices = async (req, res, next) => {
       const roomReadings = readings[room.id] || {};
       const eNowStr = roomReadings.electricityNow;
       const wNowStr = roomReadings.waterNow;
+      const ePrevStr = roomReadings.electricityPrev;
+      const wPrevStr = roomReadings.waterPrev;
+
+      const electricityPrev = (ePrevStr !== undefined && ePrevStr !== '') ? Number(ePrevStr) : dbElectricityPrev;
+      const waterPrev = (wPrevStr !== undefined && wPrevStr !== '') ? Number(wPrevStr) : dbWaterPrev;
+
       const electricityNow = (eNowStr !== undefined && eNowStr !== '') ? Number(eNowStr) : electricityPrev;
       const waterNow = (wNowStr !== undefined && wNowStr !== '') ? Number(wNowStr) : waterPrev;
 

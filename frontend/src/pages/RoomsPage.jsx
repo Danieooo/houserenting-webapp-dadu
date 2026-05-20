@@ -152,8 +152,10 @@ export default function RoomsPage() {
                 </span>
               </div>
               <p className="text-lg font-bold text-primary">{formatCurrency(room.baseRent)}<span className="text-xs text-muted-foreground font-normal">/tháng</span></p>
-              {room.tenants?.[0] && (
-                <p className="text-xs text-muted-foreground mt-1">👤 {room.tenants[0].name}</p>
+              {room.tenants && room.tenants.length > 0 && (
+                <p className="text-xs text-muted-foreground mt-1">
+                  👤 {room.tenants.map(t => t.name).join(', ')}
+                </p>
               )}
               <div className="flex gap-2 mt-4">
                 <Link to={`/rooms/${room.id}`} className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 border rounded-lg text-xs font-medium hover:bg-gray-50 transition-colors">
