@@ -119,7 +119,7 @@ const buildVietQRString = (bankBin, accountNumber, amount, description) => {
   };
 
   let qrStr = formatTag('00', '01');
-  qrStr += formatTag('01', amount ? '12' : '11');
+  qrStr += formatTag('01', '11');
 
   const aidTag = formatTag('00', 'A000000727');
   const bankTag = formatTag('00', bankBin);
