@@ -31,6 +31,144 @@ const generateQrPngBytes = async (text) => {
   return Buffer.from(base64, 'base64');
 };
 
+const bankBinMap = {
+  'MB': '970422', 'MBBANK': '970422', 'MILITARY': '970422', 'MILITARYBANK': '970422',
+  'VCB': '970436', 'VIETCOMBANK': '970436',
+  'VIETIN': '970415', 'VIETINBANK': '970415', 'CTG': '970415',
+  'BIDV': '970418', 'BID': '970418',
+  'AGRI': '970405', 'AGRIBANK': '970405', 'VARB': '970405',
+  'TECH': '970407', 'TECHCOMBANK': '970407', 'TCB': '970407',
+  'ACB': '970416',
+  'VP': '970432', 'VPBANK': '970432',
+  'TP': '970423', 'TPBANK': '970423',
+  'SACOMBANK': '970403', 'STB': '970403',
+  'HDBANK': '970437', 'HDB': '970437',
+  'VIB': '970441',
+  'SHB': '970443',
+  'EXIM': '970431', 'EXIMBANK': '970431',
+  'MSB': '970426',
+  'OCB': '970448',
+  'SEABANK': '970440', 'SEAB': '970440',
+  'LPBANK': '970449', 'LP': '970449',
+  'ABBANK': '970425', 'AB': '970425',
+  'SHINHAN': '970424',
+  'WOORI': '970457',
+  'VIETBANK': '970433',
+  'VAB': '970427', 'VIETABANK': '970427',
+  'BVBANK': '970454', 'BVB': '970454', 'VIETCAPITAL': '970454',
+  'SGB': '970400', 'SAIGONBANK': '970400',
+  'SCB': '970429',
+  'PGBANK': '970430', 'PGB': '970430',
+  'PVCOMBANK': '970412', 'PVC': '970412',
+  'KLB': '970452', 'KIENLONG': '970452', 'KIENLONGBANK': '970452',
+  'BAOVIET': '970438', 'BVBANK': '970438',
+  'NAMABANK': '970428', 'NAB': '970428',
+  'LIENVIETPOSTBANK': '970449',
+};
+
+const parsePaymentInfo = (text) => {
+  if (!text) return null;
+  const normalized = text
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toUpperCase();
+
+  if (normalized.startsWith('000201') && normalized.includes('A000000727')) {
+    return { isRawVietQR: true, rawString: text.trim() };
+  }
+
+  let bankBin = null;
+  const tokens = normalized.split(/[^A-Z0-9]/).filter(t => t.length > 0);
+  for (const token of tokens) {
+    if (bankBinMap[token]) {
+      bankBin = bankBinMap[token];
+      break;
+    }
+  }
+
+  if (!bankBin) {
+    for (const key of Object.keys(bankBinMap)) {
+      if (normalized.includes(key)) {
+        bankBin = bankBinMap[key];
+        break;
+      }
+    }
+  }
+
+  const digitMatches = normalized.match(/\d{6,19}/g);
+  let accountNumber = null;
+  if (digitMatches && digitMatches.length > 0) {
+    const candidates = digitMatches.filter(num => num !== bankBin);
+    if (candidates.length > 0) {
+      accountNumber = candidates[0];
+    } else {
+      accountNumber = digitMatches[0];
+    }
+  }
+
+  if (bankBin && accountNumber) {
+    return { isRawVietQR: false, bankBin, accountNumber };
+  }
+  return null;
+};
+
+const buildVietQRString = (bankBin, accountNumber, amount, description) => {
+  const formatTag = (id, value) => {
+    const len = value.length.toString().padStart(2, '0');
+    return `${id}${len}${value}`;
+  };
+
+  let qrStr = formatTag('00', '01');
+  qrStr += formatTag('01', amount ? '12' : '11');
+
+  const aidTag = formatTag('00', 'A000000727');
+  const bankTag = formatTag('00', bankBin);
+  const accountTag = formatTag('01', accountNumber);
+  const consumerInfoValue = bankTag + accountTag;
+  const consumerInfoTag = formatTag('01', consumerInfoValue);
+  const serviceCodeTag = formatTag('02', 'QRIBFTTA');
+  
+  const merchantAccountValue = aidTag + consumerInfoTag + serviceCodeTag;
+  qrStr += formatTag('38', merchantAccountValue);
+
+  qrStr += formatTag('53', '704');
+
+  if (amount && amount > 0) {
+    qrStr += formatTag('54', amount.toString());
+  }
+
+  qrStr += formatTag('58', 'VN');
+
+  if (description) {
+    const normalizedDesc = description
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/đ/g, 'd')
+      .replace(/Đ/g, 'D')
+      .replace(/[^a-zA-Z0-9 ]/g, '')
+      .substring(0, 25);
+    const purposeTag = formatTag('08', normalizedDesc);
+    qrStr += formatTag('62', purposeTag);
+  }
+
+  qrStr += '6304';
+
+  let crc = 0xFFFF;
+  const polynomial = 0x1021;
+  for (let i = 0; i < qrStr.length; i++) {
+    crc ^= (qrStr.charCodeAt(i) << 8);
+    for (let j = 0; j < 8; j++) {
+      if ((crc & 0x8000) !== 0) {
+        crc = ((crc << 1) ^ polynomial) & 0xFFFF;
+      } else {
+        crc = (crc << 1) & 0xFFFF;
+      }
+    }
+  }
+  const crcHex = crc.toString(16).toUpperCase().padStart(4, '0');
+  return qrStr + crcHex;
+};
+
 exports.getInvoicePdf = async (req, res, next) => {
   try {
     const invoice = await prisma.invoice.findFirst({
@@ -133,7 +271,22 @@ exports.getInvoicePdf = async (req, res, next) => {
 
     const qrPayload = settings.paymentInfo?.trim();
     if (qrPayload) {
-      const qrBytes = await generateQrPngBytes(qrPayload);
+      let finalQrPayload = qrPayload;
+      try {
+        const parsed = parsePaymentInfo(qrPayload);
+        if (parsed) {
+          if (parsed.isRawVietQR) {
+            finalQrPayload = parsed.rawString;
+          } else {
+            const memo = `PHONG ${invoice.room.name.toUpperCase()} TT TIEN NHA T${invoice.month}`;
+            finalQrPayload = buildVietQRString(parsed.bankBin, parsed.accountNumber, invoice.totalAmount, memo);
+          }
+        }
+      } catch (err) {
+        console.error('Error generating VietQR payload:', err);
+      }
+
+      const qrBytes = await generateQrPngBytes(finalQrPayload);
       const qrImage = await pdfDoc.embedPng(qrBytes);
       const qrSize = 130;
       
