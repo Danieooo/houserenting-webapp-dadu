@@ -11,6 +11,11 @@ const app = express();
 
 app.use(cors({ origin: process.env.CLIENT_URL || '*', credentials: true }));
 app.use(express.json());
+app.use((req, res, next) => {
+  console.log(`[API] ${req.method} ${req.originalUrl}`);
+  res.on('finish', () => console.log(`[API]   -> ${res.statusCode}`));
+  next();
+});
 app.use(rateLimit({ windowMs: 15 * 60 * 1000, max: 100, standardHeaders: true, legacyHeaders: false }));
 
 // Health check (public — dùng cho keep-alive ping)

@@ -23,7 +23,7 @@ export default function SettingsPage() {
 
   const { mutate, isPending } = useMutation({
     mutationFn: updateSettingsApi,
-    onSuccess: () => { toast.success('Đã lưu cài đặt!'); qc.invalidateQueries(['settings']); },
+    onSuccess: () => { toast.success('Đã lưu cài đặt!'); qc.invalidateQueries({ queryKey: ['settings'] }); },
     onError: (e) => toast.error(e.response?.data?.message || 'Lỗi lưu cài đặt'),
   });
 

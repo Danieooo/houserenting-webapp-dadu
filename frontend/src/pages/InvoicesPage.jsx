@@ -21,7 +21,7 @@ function BulkCreateDialog({ onClose }) {
     mutationFn: bulkCreateInvoicesApi,
     onSuccess: (res) => {
       toast.success(res.data.message);
-      qc.invalidateQueries(['invoices']);
+      qc.invalidateQueries({ queryKey: ['invoices'] });
       onClose();
     },
     onError: (e) => toast.error(e.response?.data?.message || 'Lỗi tạo hóa đơn'),
@@ -68,6 +68,7 @@ function BulkCreateDialog({ onClose }) {
                            }} />
                         <span className="text-xs text-muted-foreground ml-1">Mới:</span>
                         <input type="number" placeholder="Số mới" 
+                           data-testid={`bulk-electricity-now-${r.id}`}
                            className="w-16 border rounded-md px-1.5 py-0.5 text-xs focus:ring-1 focus:ring-primary outline-none"
                            onChange={e => {
                              const current = readings[r.id] || {};
@@ -84,6 +85,7 @@ function BulkCreateDialog({ onClose }) {
                            }} />
                         <span className="text-xs text-muted-foreground ml-1">Mới:</span>
                         <input type="number" placeholder="Số mới" 
+                           data-testid={`bulk-water-now-${r.id}`}
                            className="w-16 border rounded-md px-1.5 py-0.5 text-xs focus:ring-1 focus:ring-primary outline-none"
                            onChange={e => {
                              const current = readings[r.id] || {};
@@ -99,6 +101,7 @@ function BulkCreateDialog({ onClose }) {
         <div className="p-6 border-t shrink-0 flex gap-3 bg-gray-50 rounded-b-2xl">
           <button type="button" onClick={onClose} className="flex-1 px-4 py-2 bg-white border rounded-lg text-sm font-medium hover:bg-gray-50 shadow-sm">Hủy</button>
           <button onClick={() => mutate({ month, year, readings })} disabled={isPending || occupiedRooms.length === 0}
+            data-testid="bulk-confirm-btn"
             className="flex-1 px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 disabled:opacity-60 shadow-sm">
             {isPending ? 'Đang tạo...' : 'Xác nhận tạo'}
           </button>
@@ -123,7 +126,7 @@ export default function InvoicesPage() {
   const qc = useQueryClient();
   const { mutate: deleteInv } = useMutation({
     mutationFn: deleteInvoiceApi,
-    onSuccess: () => { toast.success('Đã xóa hóa đơn'); qc.invalidateQueries(['invoices']); },
+    onSuccess: () => { toast.success('Đã xóa hóa đơn'); qc.invalidateQueries({ queryKey: ['invoices'] }); },
     onError: (e) => toast.error(e.response?.data?.message || 'Lỗi xóa hóa đơn'),
   });
   const invoices = data?.data?.data || [];
@@ -136,7 +139,7 @@ export default function InvoicesPage() {
           <h1 className="text-2xl font-bold">Hóa đơn</h1>
           <p className="text-sm text-muted-foreground mt-1">{invoices.length} hóa đơn</p>
         </div>
-        <button onClick={() => setShowBulk(true)} className="flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-lg text-sm font-medium hover:bg-primary/90 shadow-sm">
+        <button onClick={() => setShowBulk(true)} data-testid="bulk-create-btn" className="flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-lg text-sm font-medium hover:bg-primary/90 shadow-sm">
           <Zap size={16} /> Tạo hàng loạt
         </button>
       </div>
@@ -174,7 +177,7 @@ export default function InvoicesPage() {
             </thead>
             <tbody>
               {invoices.map((inv) => (
-                <tr key={inv.id} className="border-b last:border-0 hover:bg-gray-50/50 transition-colors">
+                <tr key={inv.id} data-testid={`invoice-row-${inv.month}-${inv.year}-${inv.room.name.replace(/\s+/g, '-')}`} className="border-b last:border-0 hover:bg-gray-50/50 transition-colors">
                   <td className="px-4 py-3 font-medium">T{inv.month}/{inv.year}</td>
                   <td className="px-4 py-3">{inv.room.name}</td>
                   <td className="px-4 py-3 text-muted-foreground">{inv.tenant.name}</td>
@@ -186,7 +189,7 @@ export default function InvoicesPage() {
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex gap-2">
-                      <Link to={`/invoices/${inv.id}`} className="flex items-center gap-1 px-2 py-1 border rounded text-xs hover:bg-gray-50">
+                      <Link to={`/invoices/${inv.id}`} data-testid={`invoice-view-detail-${inv.id}`} className="flex items-center gap-1 px-2 py-1 border rounded text-xs hover:bg-gray-50">
                         <Eye size={12} /> Xem
                       </Link>
                       <button onClick={() => { if (confirm('Xóa hóa đơn này?')) deleteInv(inv.id); }}

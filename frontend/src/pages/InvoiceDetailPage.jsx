@@ -26,13 +26,13 @@ export default function InvoiceDetailPage() {
 
   const { mutate: updateInv, isPending: updating } = useMutation({
     mutationFn: (d) => updateInvoiceApi(id, d),
-    onSuccess: () => { toast.success('Cập nhật thành công!'); qc.invalidateQueries(['invoice', id]); setEditing(false); },
+    onSuccess: () => { toast.success('Cập nhật thành công!'); qc.invalidateQueries({ queryKey: ['invoice', id] }); setEditing(false); },
     onError: (e) => toast.error(e.response?.data?.message || 'Lỗi cập nhật'),
   });
 
   const { mutate: markPaid, isPending: paying } = useMutation({
     mutationFn: (d) => markInvoicePaidApi(id, d),
-    onSuccess: () => { toast.success('Đã đánh dấu thu tiền!'); qc.invalidateQueries(['invoice', id]); },
+    onSuccess: () => { toast.success('Đã đánh dấu thu tiền!'); qc.invalidateQueries({ queryKey: ['invoice', id] }); },
     onError: (e) => toast.error(e.response?.data?.message || 'Lỗi'),
   });
 
@@ -79,6 +79,7 @@ export default function InvoiceDetailPage() {
                   {editing ? <><X size={13} /> Hủy</> : <><Edit2 size={13} /> Sửa</>}
                 </button>
                 <button onClick={() => { if (confirm('Đánh dấu đã thu tiền?')) markPaid({ paidAmount: invoice.totalAmount }); }}
+                  data-testid="invoice-pay-btn"
                   disabled={paying} className="flex items-center gap-1.5 px-3 py-2 bg-green-600 text-white rounded-lg text-xs font-medium hover:bg-green-700 disabled:opacity-60">
                   <CheckCircle2 size={13} /> Thu tiền
                 </button>
@@ -103,7 +104,7 @@ export default function InvoiceDetailPage() {
 
           <div className="flex justify-between text-base font-bold pt-2">
             <span>Tổng cộng</span>
-            <span className="text-primary">{formatCurrency(invoice.totalAmount)}</span>
+            <span className="text-primary" data-testid="invoice-total-amount">{formatCurrency(invoice.totalAmount)}</span>
           </div>
 
           <div className="pt-2">

@@ -19,9 +19,9 @@ export default function TenantDetailPage() {
     mutationFn: () => moveOutTenantApi(id),
     onSuccess: () => {
       toast.success('Khách đã được chuyển sang phần đã rời đi');
-      qc.invalidateQueries(['tenant', id]);
-      qc.invalidateQueries(['tenants']);
-      qc.invalidateQueries(['rooms']);
+      qc.invalidateQueries({ queryKey: ['tenant', id] });
+      qc.invalidateQueries({ queryKey: ['tenants'] });
+      qc.invalidateQueries({ queryKey: ['rooms'] });
     },
     onError: (e) => toast.error(e.response?.data?.message || 'Lỗi chuyển khách ra'),
   });
@@ -30,22 +30,22 @@ export default function TenantDetailPage() {
     mutationFn: () => deleteTenantApi(id),
     onSuccess: () => {
       toast.success('Khách đã được xóa hoàn toàn');
-      qc.invalidateQueries(['tenant', id]);
-      qc.invalidateQueries(['tenants']);
-      qc.invalidateQueries(['rooms']);
+      qc.invalidateQueries({ queryKey: ['tenant', id] });
+      qc.invalidateQueries({ queryKey: ['tenants'] });
+      qc.invalidateQueries({ queryKey: ['rooms'] });
     },
     onError: (e) => toast.error(e.response?.data?.message || 'Lỗi xóa khách'),
   });
 
   const { mutate: uploadFile, isPending: uploading } = useMutation({
     mutationFn: ({ formData }) => uploadTenantFileApi(id, formData),
-    onSuccess: () => { toast.success('Upload thành công!'); qc.invalidateQueries(['tenant', id]); setLabel(''); },
+    onSuccess: () => { toast.success('Upload thành công!'); qc.invalidateQueries({ queryKey: ['tenant', id] }); setLabel(''); },
     onError: (e) => toast.error(e.response?.data?.message || 'Lỗi upload'),
   });
 
   const { mutate: deleteFile } = useMutation({
     mutationFn: (fileId) => deleteTenantFileApi(id, fileId),
-    onSuccess: () => { toast.success('Đã xóa file'); qc.invalidateQueries(['tenant', id]); },
+    onSuccess: () => { toast.success('Đã xóa file'); qc.invalidateQueries({ queryKey: ['tenant', id] }); },
   });
 
   const handleFileSelect = (e) => {

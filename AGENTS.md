@@ -59,3 +59,13 @@ Dự án hiện tại được quản lý nghiêm ngặt bởi bộ tài liệu 
 2.  **`CHANGELOG.md`** là lịch sử thay đổi chuẩn chỉnh và phải ghi nhận mọi chỉnh sửa về mã nguồn, cấu hình hay đặc tả spec.
 3.  Bất kỳ thay đổi nào tác động đến yêu cầu nghiệp vụ, cấu trúc component, phạm vi công việc hay quy tắc hệ thống **BẮT BUỘC** phải cập nhật đồng thời cả [AGENTS.md](file:///c:/Users/Duyen/Documents/GitHub/houserenting-app/AGENTS.md) và [CHANGELOG.md](file:///c:/Users/Duyen/Documents/GitHub/houserenting-app/CHANGELOG.md) trong cùng một lượt bàn giao công việc trước khi xem là hoàn thành.
 4.  Không sử dụng tệp `README.md` ở gốc làm file governance. Mọi quy tắc và quản lý dự án đều thuộc về `AGENTS.md`.
+
+---
+
+## 5. System Status & Milestone Progress (Trạng thái hệ thống & Tiến độ)
+
+Hiện tại hệ thống đã hoàn thành xuất sắc đợt cải tiến lớn (Phiên bản `1.2.0`):
+*   **Task 11: Heuristic UI/UX Polish**: Đã bổ sung các màn hình chờ Skeleton co giãn mượt mà cho toàn bộ danh sách phòng, danh sách hóa đơn, khách thuê, chi tiết phòng và cài đặt. Cải tiến hiển thị lỗi chi tiết tiếng Việt và tự động đóng banner khi API thức giấc thành công.
+*   **Task 12: Responsive Polish**: Sửa triệt để các lỗi tràn viền chiều ngang (`overflow-x`) trên di động cho bảng hóa đơn và dashboard. Tối ưu hóa Recharts ResponsiveContainer co giãn mượt mà trên Mobile (375px), Tablet (768px).
+*   **Task 13: UI Automation Testing**: Tích hợp Playwright E2E. Cài đặt các thẻ `data-testid` định danh kiểm thử chuẩn xác trên tất cả các trang. Thiết lập kịch bản `happy-path.spec.js` chạy 100% bằng định tuyến client-side router, bảo toàn Zustand state (accessToken), loại bỏ hoàn toàn hiện tượng Silent Refresh race condition. Chạy test Playwright E2E thành công rực rỡ (`1 passed` trong 34 giây).
+

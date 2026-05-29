@@ -55,6 +55,7 @@ export default function LoginPage() {
                   type="email"
                   placeholder="admin@test.com"
                   {...register('email')}
+                  data-testid="login-email"
                   className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 outline-none"
                 />
               </div>
@@ -70,6 +71,7 @@ export default function LoginPage() {
                   type="password"
                   placeholder="••••••••"
                   {...register('password')}
+                  data-testid="login-password"
                   className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 outline-none"
                 />
               </div>
@@ -79,6 +81,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={isPending}
+              data-testid="login-submit"
               className="w-full bg-gradient-to-r from-primary to-indigo-600 hover:from-primary/95 hover:to-indigo-600/95 shadow-md shadow-primary/10 text-white py-2.5 rounded-lg text-sm font-medium disabled:opacity-60 transition-all duration-300 transform active:scale-[0.98]"
             >
               {isPending ? 'Đang đăng nhập...' : 'Đăng nhập'}

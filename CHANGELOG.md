@@ -7,6 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.2.0] - 2026-05-29
+
+### Added
+- **UI Test Automation Suite (Playwright E2E)**:
+  - Cấu hình tệp tin [playwright.config.js](file:///c:/Users/Duyen/Documents/GitHub/houserenting-app/frontend/playwright.config.js) kiểm thử Sequential (`workers: 1`) trên local để chống xung đột/lock database SQLite.
+  - Viết kịch bản kiểm thử Happy Path tự động cao cấp [happy-path.spec.js](file:///c:/Users/Duyen/Documents/GitHub/houserenting-app/frontend/e2e/happy-path.spec.js) bao phủ trọn vẹn chu trình nghiệp vụ cốt lõi: Đăng nhập -> Tạo phòng trọ -> Đăng ký khách thuê -> Tự động chuyển trạng thái phòng sang "Có người" -> Tạo hóa đơn điện nước hàng loạt -> Đối soát giá trị hóa đơn chính xác -> Ghi nhận thanh toán hóa đơn -> Trả phòng (soft delete) -> Trạng thái phòng quay về "Trống".
+  - Tích hợp 100% Client-Side Routing bằng cách dùng sidebar navigation thay thế cho `page.goto` reload trang, bảo toàn Zustand Memory State (`accessToken`), triệt tiêu hoàn toàn race condition trong cơ chế Silent Refresh token. Chạy test Playwright E2E thành công rực rỡ (`1 passed` trong 34 giây).
+- **Tích hợp Thẻ Kiểm Thử data-testid**:
+  - Bổ sung định danh kiểm thử `data-testid` vững chãi vào các tệp giao diện:
+    - [InvoicesPage.jsx](file:///c:/Users/Duyen/Documents/GitHub/houserenting-app/frontend/src/pages/InvoicesPage.jsx): `bulk-create-btn`, `bulk-electricity-now-${roomId}`, `bulk-water-now-${roomId}`, `bulk-confirm-btn`, `invoice-row-${month}-${year}-${room}`, `invoice-view-detail-${id}`.
+    - [InvoiceDetailPage.jsx](file:///c:/Users/Duyen/Documents/GitHub/houserenting-app/frontend/src/pages/InvoiceDetailPage.jsx): `invoice-pay-btn`, `invoice-total-amount`.
+
+### Changed
+- **Nâng cấp Hệ thống Đồng bộ TanStack Query v5**:
+  - Chuyển đổi toàn bộ lệnh invalidation `qc.invalidateQueries([...])` cũ (v4 syntax) thành cú pháp đối tượng mới `{ queryKey: [...] }` bắt buộc của TanStack Query v5 trên toàn monorepo: `RoomsPage`, `TenantsPage`, `InvoicesPage`, `RoomDetailPage`, `InvoiceDetailPage`, `SettingsPage` và `TenantDetailPage`.
+  - Tích hợp hàm `refetch` trực tiếp từ `useQuery` và gọi ép buộc khi đóng các Dialog thêm phòng/thêm khách để đảm bảo đồng bộ dữ liệu ngay lập tức trên UI mà không bị phụ thuộc vào cache delay.
+
+### Added (Backend)
+- **Hệ thống Trace Log API**: Bổ sung middleware tự động in log chi tiết từng lượt request/response dạng `[API] METHOD URL -> STATUS` trong [index.js](file:///c:/Users/Duyen/Documents/GitHub/houserenting-app/backend/src/index.js) để phục vụ quá trình debug và kiểm soát E2E chính xác hơn.
+
+---
+
 ## [1.1.0] - 2026-05-29
 
 ### Added

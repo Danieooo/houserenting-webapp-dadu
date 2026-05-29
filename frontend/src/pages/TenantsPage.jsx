@@ -40,8 +40,8 @@ function TenantForm({ onClose, initialData }) {
     mutationFn: (data) => initialData ? updateTenantApi(initialData.id, data) : createTenantApi(data),
     onSuccess: () => { 
       toast.success(initialData ? 'Cập nhật khách thuê thành công!' : 'Thêm khách thuê thành công!'); 
-      qc.invalidateQueries(['tenants']); 
-      qc.invalidateQueries(['rooms']); 
+      qc.invalidateQueries({ queryKey: ['tenants'] }); 
+      qc.invalidateQueries({ queryKey: ['rooms'] }); 
       onClose(); 
     },
     onError: (e) => toast.error(e.response?.data?.message || 'Lỗi lưu khách'),
@@ -64,13 +64,13 @@ function TenantForm({ onClose, initialData }) {
           ].map(({ label, name, placeholder }) => (
             <div key={name}>
               <label className="block text-sm font-medium mb-1">{label}</label>
-              <input {...register(name)} placeholder={placeholder} className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 outline-none" />
+              <input {...register(name)} placeholder={placeholder} data-testid={`tenant-form-${name}`} className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 outline-none" />
               {errors[name] && <p className="text-red-500 text-xs mt-1">{errors[name].message}</p>}
             </div>
           ))}
           <div>
             <label className="block text-sm font-medium mb-1">Phòng *</label>
-            <select {...register('roomId')} className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 outline-none">
+            <select {...register('roomId')} data-testid="tenant-form-roomId" className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 outline-none">
               <option value="">-- Chọn phòng --</option>
               {availableRooms.map(r => (
                 <option key={r.id} value={r.id}>
@@ -83,21 +83,21 @@ function TenantForm({ onClose, initialData }) {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium mb-1">Ngày vào ở *</label>
-              <input type="date" {...register('moveInDate')} className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 outline-none" />
+              <input type="date" {...register('moveInDate')} data-testid="tenant-form-moveInDate" className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 outline-none" />
               {errors.moveInDate && <p className="text-red-500 text-xs mt-1">{errors.moveInDate.message}</p>}
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">Ngày kết thúc</label>
-              <input type="date" {...register('moveOutDate')} className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 outline-none" />
+              <input type="date" {...register('moveOutDate')} data-testid="tenant-form-moveOutDate" className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 outline-none" />
             </div>
           </div>
           <div>
             <label className="block text-sm font-medium mb-1">Tiền cọc (đ)</label>
-            <input type="number" {...register('deposit')} placeholder="0" className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 outline-none" />
+            <input type="number" {...register('deposit')} data-testid="tenant-form-deposit" placeholder="0" className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 outline-none" />
           </div>
           <div className="flex gap-3 pt-2">
             <button type="button" onClick={onClose} className="flex-1 px-4 py-2 border rounded-lg text-sm hover:bg-gray-50">Hủy</button>
-            <button type="submit" disabled={isPending} className="flex-1 px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 disabled:opacity-60">
+            <button type="submit" disabled={isPending} data-testid="tenant-form-submit" className="flex-1 px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 disabled:opacity-60">
               {isPending ? 'Đang lưu...' : (initialData ? 'Cập nhật' : 'Thêm khách')}
             </button>
           </div>
@@ -113,16 +113,16 @@ export default function TenantsPage() {
   const [editingTenant, setEditingTenant] = useState(null);
   const [showForm, setShowForm] = useState(false);
   const [filter, setFilter] = useState('true');
-  const { data, isLoading } = useQuery({ queryKey: ['tenants', filter], queryFn: () => getTenantsApi({ active: filter }) });
+  const { data, isLoading, refetch } = useQuery({ queryKey: ['tenants', filter], queryFn: () => getTenantsApi({ active: filter }) });
   const qc = useQueryClient();
   const { mutate: moveOut } = useMutation({
     mutationFn: (id) => moveOutTenantApi(id),
-    onSuccess: () => { toast.success('Khách đã được chuyển sang phần đã rời đi'); qc.invalidateQueries(['tenants']); qc.invalidateQueries(['rooms']); },
+    onSuccess: () => { toast.success('Khách đã được chuyển sang phần đã rời đi'); qc.invalidateQueries({ queryKey: ['tenants'] }); qc.invalidateQueries({ queryKey: ['rooms'] }); },
     onError: (e) => toast.error(e.response?.data?.message || 'Lỗi chuyển khách ra'),
   });
   const { mutate: deleteTenant } = useMutation({
     mutationFn: (id) => deleteTenantApi(id),
-    onSuccess: () => { toast.success('Khách đã được xóa hoàn toàn'); qc.invalidateQueries(['tenants']); qc.invalidateQueries(['rooms']); },
+    onSuccess: () => { toast.success('Khách đã được xóa hoàn toàn'); qc.invalidateQueries({ queryKey: ['tenants'] }); qc.invalidateQueries({ queryKey: ['rooms'] }); },
     onError: (e) => toast.error(e.response?.data?.message || 'Lỗi xóa khách'),
   });
   const tenants = data?.data?.data || [];
@@ -149,7 +149,7 @@ export default function TenantsPage() {
             <option value="true">Đang thuê</option>
             <option value="false">Đã rời đi</option>
           </select>
-          <button onClick={() => setShowForm(true)} className="flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-lg text-sm font-medium hover:bg-primary/90 shadow-sm">
+          <button onClick={() => setShowForm(true)} data-testid="add-tenant-btn" className="flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-lg text-sm font-medium hover:bg-primary/90 shadow-sm">
             <Plus size={16} /> Thêm khách
           </button>
         </div>
@@ -167,7 +167,7 @@ export default function TenantsPage() {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {tenants.map((t) => (
-            <div key={t.id} className="bg-white rounded-xl border shadow-sm hover:shadow-md hover:scale-[1.015] hover:border-primary/20 transition-all duration-300 ease-in-out p-5 flex flex-col">
+            <div key={t.id} data-testid={`tenant-card-${t.name.replace(/\s+/g, '-')}`} className="bg-white rounded-xl border shadow-sm hover:shadow-md hover:scale-[1.015] hover:border-primary/20 transition-all duration-300 ease-in-out p-5 flex flex-col">
               <div className="flex items-start justify-between mb-3">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-lg">
@@ -201,7 +201,7 @@ export default function TenantsPage() {
               </div>
 
               <div className="flex gap-2 mt-4 pt-4 border-t">
-                <Link to={`/tenants/${t.id}`} className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 border rounded-lg text-xs font-medium hover:bg-gray-50 transition-colors">
+                <Link to={`/tenants/${t.id}`} data-testid={`tenant-view-detail-${t.id}`} className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 border rounded-lg text-xs font-medium hover:bg-gray-50 transition-colors">
                   <Eye size={13} /> Chi tiết
                 </Link>
                 <button onClick={() => handleEdit(t)}
@@ -210,12 +210,14 @@ export default function TenantsPage() {
                 </button>
                 {t.active && (
                   <button onClick={() => { if (confirm(`Xác nhận chuyển ${t.name} rời khỏi phòng ${t.room?.name || ''}?`)) moveOut(t.id); }}
+                    data-testid={`tenant-checkout-${t.id}`}
                     className="px-3 py-2 border border-orange-200 rounded-lg text-xs font-medium text-orange-600 hover:bg-orange-50 transition-colors">
                     <UserX size={13} />
                     <span className="ml-1">Chuyển ra</span>
                   </button>
                 )}
                 <button onClick={() => { if (confirm(`Xác nhận xóa hoàn toàn khách ${t.name}?`)) deleteTenant(t.id); }}
+                  data-testid={`tenant-delete-${t.id}`}
                   className="px-3 py-2 border border-red-200 rounded-lg text-xs font-medium text-red-600 hover:bg-red-50 transition-colors">
                   <Trash2 size={13} />
                   <span className="ml-1">Xóa</span>
@@ -226,7 +228,7 @@ export default function TenantsPage() {
         </div>
       )}
 
-      {showForm && <TenantForm initialData={editingTenant} onClose={handleCloseForm} />}
+      {showForm && <TenantForm initialData={editingTenant} onClose={() => { handleCloseForm(); refetch(); }} />}
     </div>
   );
 }

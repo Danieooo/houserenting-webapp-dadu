@@ -42,10 +42,13 @@ function RoomForm({ onClose, onSuccess, initialData }) {
     mutationFn: (data) => initialData ? updateRoomApi(initialData.id, data) : createRoomApi(data),
     onSuccess: () => {
       toast.success(initialData ? 'Cập nhật phòng thành công!' : 'Thêm phòng thành công!');
-      qc.invalidateQueries(['rooms']);
+      qc.invalidateQueries({ queryKey: ['rooms'] });
       onSuccess?.();
     },
-    onError: (e) => toast.error(e.response?.data?.message || 'Lỗi lưu phòng'),
+    onError: (e) => {
+      console.error('Mutate room error:', e.response?.data || e);
+      toast.error(e.response?.data?.message || 'Lỗi lưu phòng');
+    },
   });
 
   const onSubmit = (data) => mutate({
@@ -58,10 +61,10 @@ function RoomForm({ onClose, onSuccess, initialData }) {
     garbageFee: data.garbageFee ? Number(data.garbageFee) : undefined,
   });
 
-  const Field = ({ label, name, placeholder, type = 'text' }) => (
+  const Field = ({ label, name, placeholder, type = 'text', testId }) => (
     <div>
       <label className="block text-sm font-medium mb-1">{label}</label>
-      <input type={type} placeholder={placeholder} {...register(name)}
+      <input type={type} placeholder={placeholder} {...register(name)} data-testid={testId}
         className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 outline-none" />
       {errors[name] && <p className="text-red-500 text-xs mt-1">{errors[name].message}</p>}
     </div>
@@ -73,19 +76,19 @@ function RoomForm({ onClose, onSuccess, initialData }) {
         <div className="p-6 border-b">
           <h2 className="text-lg font-semibold">{initialData ? 'Cập nhật phòng' : 'Thêm phòng mới'}</h2>
         </div>
-        <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-4">
+        <form onSubmit={handleSubmit(onSubmit, (err) => console.log('Room Form Validation Errors:', err))} className="p-6 space-y-4">
           <div className="grid grid-cols-2 gap-4">
-            <div className="col-span-2"><Field label="Tên phòng *" name="name" placeholder="Phòng 101" /></div>
-            <Field label="Tầng" name="floor" placeholder="1" type="number" />
-            <Field label="Diện tích (m²)" name="area" placeholder="20" type="number" />
-            <div className="col-span-2"><Field label="Giá thuê (đ/tháng) *" name="baseRent" placeholder="2500000" type="number" /></div>
-            <Field label="Giá điện (đ/kWh)" name="electricPrice" placeholder="3500" type="number" />
-            <Field label="Giá nước (đ/m³)" name="waterPrice" placeholder="15000" type="number" />
-            <div className="col-span-2"><Field label="Phí rác (đ/tháng)" name="garbageFee" placeholder="20000" type="number" /></div>
+            <div className="col-span-2"><Field label="Tên phòng *" name="name" placeholder="Phòng 101" testId="room-form-name" /></div>
+            <Field label="Tầng" name="floor" placeholder="1" type="number" testId="room-form-floor" />
+            <Field label="Diện tích (m²)" name="area" placeholder="20" type="number" testId="room-form-area" />
+            <div className="col-span-2"><Field label="Giá thuê (đ/tháng) *" name="baseRent" placeholder="2500000" type="number" testId="room-form-baseRent" /></div>
+            <Field label="Giá điện (đ/kWh)" name="electricPrice" placeholder="3500" type="number" testId="room-form-electricPrice" />
+            <Field label="Giá nước (đ/m³)" name="waterPrice" placeholder="15000" type="number" testId="room-form-waterPrice" />
+            <div className="col-span-2"><Field label="Phí rác (đ/tháng)" name="garbageFee" placeholder="20000" type="number" testId="room-form-garbageFee" /></div>
           </div>
           <div className="flex gap-3 pt-2">
             <button type="button" onClick={onClose} className="flex-1 px-4 py-2 border rounded-lg text-sm hover:bg-gray-50">Hủy</button>
-            <button type="submit" disabled={isPending} className="flex-1 px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 disabled:opacity-60">
+            <button type="submit" disabled={isPending} data-testid="room-form-submit" className="flex-1 px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 disabled:opacity-60">
               {isPending ? 'Đang lưu...' : (initialData ? 'Cập nhật' : 'Thêm phòng')}
             </button>
           </div>
@@ -100,11 +103,11 @@ import { SkeletonCard } from '../components/Skeleton';
 export default function RoomsPage() {
   const [editingRoom, setEditingRoom] = useState(null);
   const [showForm, setShowForm] = useState(false);
-  const { data, isLoading } = useQuery({ queryKey: ['rooms'], queryFn: getRoomsApi });
+  const { data, isLoading, refetch } = useQuery({ queryKey: ['rooms'], queryFn: getRoomsApi });
   const qc = useQueryClient();
   const { mutate: deleteRoom } = useMutation({
     mutationFn: deleteRoomApi,
-    onSuccess: () => { toast.success('Đã xóa phòng'); qc.invalidateQueries(['rooms']); },
+    onSuccess: () => { toast.success('Đã xóa phòng'); qc.invalidateQueries({ queryKey: ['rooms'] }); },
     onError: (e) => toast.error(e.response?.data?.message || 'Không thể xóa phòng'),
   });
   const rooms = data?.data?.data || [];
@@ -126,7 +129,7 @@ export default function RoomsPage() {
           <h1 className="text-2xl font-bold">Phòng trọ</h1>
           <p className="text-sm text-muted-foreground mt-1">{rooms.length} phòng</p>
         </div>
-        <button onClick={() => setShowForm(true)} className="flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-lg text-sm font-medium hover:bg-primary/90 shadow-sm">
+        <button onClick={() => setShowForm(true)} data-testid="add-room-btn" className="flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-lg text-sm font-medium hover:bg-primary/90 shadow-sm">
           <Plus size={16} /> Thêm phòng
         </button>
       </div>
@@ -143,7 +146,7 @@ export default function RoomsPage() {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {rooms.map((room) => (
-            <div key={room.id} className="bg-white rounded-xl border shadow-sm hover:shadow-md hover:scale-[1.015] hover:border-primary/20 transition-all duration-300 ease-in-out p-5">
+            <div key={room.id} data-testid={`room-card-${room.name.replace(/\s+/g, '-')}`} className="bg-white rounded-xl border shadow-sm hover:shadow-md hover:scale-[1.015] hover:border-primary/20 transition-all duration-300 ease-in-out p-5">
               <div className="flex items-start justify-between mb-3">
                 <div>
                   <h3 className="font-semibold text-base">{room.name}</h3>
@@ -160,7 +163,7 @@ export default function RoomsPage() {
                 </p>
               )}
               <div className="flex gap-2 mt-4">
-                <Link to={`/rooms/${room.id}`} className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 border rounded-lg text-xs font-medium hover:bg-gray-50 transition-colors">
+                <Link to={`/rooms/${room.id}`} data-testid={`room-view-detail-${room.id}`} className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 border rounded-lg text-xs font-medium hover:bg-gray-50 transition-colors">
                   <Eye size={13} /> Chi tiết
                 </Link>
                 <button onClick={() => handleEdit(room)}
@@ -177,7 +180,7 @@ export default function RoomsPage() {
         </div>
       )}
 
-      {showForm && <RoomForm initialData={editingRoom} onClose={handleCloseForm} onSuccess={handleCloseForm} />}
+      {showForm && <RoomForm initialData={editingRoom} onClose={handleCloseForm} onSuccess={() => { handleCloseForm(); refetch(); }} />}
     </div>
   );
 }
