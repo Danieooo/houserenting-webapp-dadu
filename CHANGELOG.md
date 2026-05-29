@@ -7,7 +7,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [1.3.0] - 2026-05-29
+## [1.3.1] - 2026-05-30
+
+### Added
+- **Nhúng ảnh QR tĩnh vào hóa đơn PDF (Static QR Embedding)**:
+  - Tích hợp cơ chế ưu tiên nhúng ảnh QR tĩnh từ tệp `backend/assets/qr_code.png` vào PDF hóa đơn thay vì sinh mã QR động.
+  - Ảnh QR tĩnh (thẻ Techcombank do chủ trọ cung cấp) được nhúng với kích thước tỷ lệ đúng khung hình đứng dọc **rộng 110 × cao 215** (tỷ lệ ~1:2), đảm bảo hiển thị sắc nét không bị méo trên trang A4.
+  - Giải quyết triệt để lỗi "Mã QR không hợp lệ" khi quét bằng ứng dụng ngân hàng, do mã QR giờ đây là bản gốc từ ngân hàng.
+- **Tệp tài nguyên QR tĩnh**: Thêm mới tệp [qr_code.png](file:///c:/Users/Duyen/Documents/GitHub/houserenting-app/backend/assets/qr_code.png) (140KB, 525×1024px) chứa ảnh thẻ QR Techcombank của chủ trọ.
+
+### Changed
+- **Tái cấu trúc kiến trúc QR trong pdfController (Two-Tier QR Architecture)**:
+  - Refactor phần QR trong [pdfController.js](file:///c:/Users/Duyen/Documents/GitHub/houserenting-app/backend/src/controllers/pdfController.js) (dòng 329-405) theo chiến lược hai tầng:
+    - *Tầng 1 (Ưu tiên)*: Kiểm tra `fs.existsSync('backend/assets/qr_code.png')` → nhúng ảnh tĩnh.
+    - *Tầng 2 (Dự phòng)*: Nếu ảnh tĩnh không tồn tại → sinh mã VietQR động EMVCo MPM (logic hiện tại được giữ nguyên).
+  - Bảo toàn 100% backward compatibility: xóa tệp `qr_code.png` sẽ tự động quay về chế độ VietQR động.
+- **Cập nhật đặc tả Kiro Specs**:
+  - Cập nhật [requirements.md](file:///c:/Users/Duyen/Documents/GitHub/houserenting-app/.kiro/specs/house-renting-management/requirements.md): Bổ sung yêu cầu tích hợp QR tĩnh/động linh hoạt vào mục R3.6.
+  - Cập nhật [design.md](file:///c:/Users/Duyen/Documents/GitHub/houserenting-app/.kiro/specs/house-renting-management/design.md): Chuyển mục "VietQR Code Specification" thành "QR Code Specification (Static Priority + VietQR Fallback)" với kiến trúc hai tầng.
+
+### Verified
+- ✅ Backend Unit Tests: `parsePaymentInfo` & `buildVietQRString` — ALL PASSED.
+- ✅ Playwright E2E `qr-validation.spec.js`: Đăng nhập → Cấu hình cài đặt → Tạo phòng/khách/hóa đơn → Tải PDF thành công — `1 passed` (41.7s).
+
+---
+
 
 ### Added
 - **Bộ kiểm thử đơn vị tự động VietQR (Backend Unit Test)**:

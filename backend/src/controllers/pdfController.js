@@ -326,55 +326,79 @@ exports.getInvoicePdf = async (req, res, next) => {
     drawText(page, `Ngày lập: ${formatDate(invoice.createdAt)}`, { x: margin, y, size: 10, font, color: rgb(0.5, 0.5, 0.5) });
     y -= 35;
 
-    const qrPayload = settings.paymentInfo?.trim();
-    if (qrPayload) {
-      let finalQrPayload = qrPayload;
-      try {
-        const parsed = parsePaymentInfo(qrPayload);
-        if (parsed) {
-          if (parsed.isRawVietQR) {
-            finalQrPayload = parsed.rawString;
-          } else {
-            const memo = `PHONG ${invoice.room.name.toUpperCase()} TT TIEN NHA T${invoice.month}`;
-            const merchantName = settings.shopName || 'HOUSE RENTING';
-            finalQrPayload = buildVietQRString(parsed.bankBin, parsed.accountNumber, invoice.totalAmount, memo, merchantName);
-          }
-        }
-      } catch (err) {
-        console.error('Error generating VietQR payload:', err);
-      }
+    // === QR Code Section: Ưu tiên ảnh QR tĩnh, fallback sang VietQR động ===
+    const staticQrPath = path.join(__dirname, '..', '..', 'assets', 'qr_code.png');
+    const hasStaticQr = fs.existsSync(staticQrPath);
 
-      const qrBytes = await generateQrPngBytes(finalQrPayload);
-      const qrImage = await pdfDoc.embedPng(qrBytes);
-      const qrSize = 130;
-      
+    if (hasStaticQr) {
+      // --- Chế độ QR tĩnh: nhúng trực tiếp ảnh thẻ Techcombank ---
+      const staticQrBytes = fs.readFileSync(staticQrPath);
+      const qrImage = await pdfDoc.embedPng(staticQrBytes);
+      const qrWidth = 110;
+      const qrHeight = 215;
+
       // Căn giữa dòng chữ hướng dẫn quét mã
       const title1 = 'Quét mã QR để thanh toán';
       const title1W = font.widthOfTextAtSize(title1, 10);
       drawText(page, title1, { x: (width - title1W) / 2, y, size: 10, font, color: rgb(0.1, 0.1, 0.1) });
-      
-      // Căn giữa hình ảnh mã QR
-      const qrX = (width - qrSize) / 2;
-      const qrY = y - qrSize - 12;
-      page.drawImage(qrImage, { x: qrX, y: qrY, width: qrSize, height: qrSize });
 
-      // Căn giữa dòng chữ hướng dẫn chuyển khoản
-      const title2 = 'Hoặc chuyển khoản theo thông tin bên dưới:';
-      const title2W = font.widthOfTextAtSize(title2, 9);
-      drawText(page, title2, { x: (width - title2W) / 2, y: qrY - 18, size: 9, font, color: rgb(0.1, 0.1, 0.1) });
+      // Căn giữa hình ảnh mã QR (giữ tỷ lệ khung hình đứng dọc)
+      const qrX = (width - qrWidth) / 2;
+      const qrY = y - qrHeight - 12;
+      page.drawImage(qrImage, { x: qrX, y: qrY, width: qrWidth, height: qrHeight });
 
-      // Căn giữa từng dòng thông tin tài khoản chuyển khoản chi tiết
-      const wrapped = qrPayload.split(/\r?\n/);
-      let textY = qrY - 32;
-      wrapped.forEach((line) => {
-        const lineW = font.widthOfTextAtSize(line, 9);
-        drawText(page, line, { x: (width - lineW) / 2, y: textY, size: 9, font, color: rgb(0.2, 0.2, 0.2) });
-        textY -= 12;
-      });
     } else {
-      const fallbackText = 'Quý khách vui lòng chuyển khoản theo thông tin tài khoản đã cung cấp.';
-      const fallbackW = font.widthOfTextAtSize(fallbackText, 10);
-      drawText(page, fallbackText, { x: (width - fallbackW) / 2, y, size: 10, font, color: rgb(0.1, 0.1, 0.1) });
+      // --- Chế độ dự phòng: sinh mã QR động VietQR ---
+      const qrPayload = settings.paymentInfo?.trim();
+      if (qrPayload) {
+        let finalQrPayload = qrPayload;
+        try {
+          const parsed = parsePaymentInfo(qrPayload);
+          if (parsed) {
+            if (parsed.isRawVietQR) {
+              finalQrPayload = parsed.rawString;
+            } else {
+              const memo = `PHONG ${invoice.room.name.toUpperCase()} TT TIEN NHA T${invoice.month}`;
+              const merchantName = settings.shopName || 'HOUSE RENTING';
+              finalQrPayload = buildVietQRString(parsed.bankBin, parsed.accountNumber, invoice.totalAmount, memo, merchantName);
+            }
+          }
+        } catch (err) {
+          console.error('Error generating VietQR payload:', err);
+        }
+
+        const qrBytes = await generateQrPngBytes(finalQrPayload);
+        const qrImage = await pdfDoc.embedPng(qrBytes);
+        const qrSize = 130;
+
+        // Căn giữa dòng chữ hướng dẫn quét mã
+        const title1 = 'Quét mã QR để thanh toán';
+        const title1W = font.widthOfTextAtSize(title1, 10);
+        drawText(page, title1, { x: (width - title1W) / 2, y, size: 10, font, color: rgb(0.1, 0.1, 0.1) });
+
+        // Căn giữa hình ảnh mã QR
+        const qrX = (width - qrSize) / 2;
+        const qrY = y - qrSize - 12;
+        page.drawImage(qrImage, { x: qrX, y: qrY, width: qrSize, height: qrSize });
+
+        // Căn giữa dòng chữ hướng dẫn chuyển khoản
+        const title2 = 'Hoặc chuyển khoản theo thông tin bên dưới:';
+        const title2W = font.widthOfTextAtSize(title2, 9);
+        drawText(page, title2, { x: (width - title2W) / 2, y: qrY - 18, size: 9, font, color: rgb(0.1, 0.1, 0.1) });
+
+        // Căn giữa từng dòng thông tin tài khoản chuyển khoản chi tiết
+        const wrapped = qrPayload.split(/\r?\n/);
+        let textY = qrY - 32;
+        wrapped.forEach((line) => {
+          const lineW = font.widthOfTextAtSize(line, 9);
+          drawText(page, line, { x: (width - lineW) / 2, y: textY, size: 9, font, color: rgb(0.2, 0.2, 0.2) });
+          textY -= 12;
+        });
+      } else {
+        const fallbackText = 'Quý khách vui lòng chuyển khoản theo thông tin tài khoản đã cung cấp.';
+        const fallbackW = font.widthOfTextAtSize(fallbackText, 10);
+        drawText(page, fallbackText, { x: (width - fallbackW) / 2, y, size: 10, font, color: rgb(0.1, 0.1, 0.1) });
+      }
     }
 
     const pdfBytes = await pdfDoc.save();

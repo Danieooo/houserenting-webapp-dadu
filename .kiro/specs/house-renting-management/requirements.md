@@ -56,11 +56,13 @@ Hệ thống được thiết kế với triết lý **Product-Grade** (Chất l
    - Chủ trọ CÓ THỂ cập nhật số tiền thực tế thu được từ khách (`paidAmount`).
    - Hệ thống PHẢI tự động chuyển trạng thái hóa đơn sang đã thanh toán (`paid = true`) NẾU `paidAmount >= totalAmount`.
    - NẾU khách thanh toán thiếu (`paidAmount < totalAmount`), hệ thống PHẢI giữ trạng thái `paid = false`, cập nhật `paidAmount` đã thu và hiển thị số tiền còn nợ trên giao diện.
-6. **Tạo và in PDF chất lượng cao**:
+6. **Tạo và in PDF chất lượng cao và tích hợp mã QR**:
    - Hệ thống PHẢI hỗ trợ tạo file PDF hóa đơn tự động từ backend sử dụng thư viện `pdf-lib`.
    - File PDF PHẢI hiển thị đầy đủ, đẹp mắt tiếng Việt Unicode có dấu (thông qua nhúng font Segoe UI TTF có sẵn) để tránh lỗi hiển thị ô vuông hoặc ký tự lạ.
-   - File PDF PHẢI tích hợp tự động mã QR thanh toán ngân hàng (VietQR) dựa trên số tài khoản, tên ngân hàng và số tiền hóa đơn được cấu hình trong phần cài đặt của chủ trọ.
-   - **Tiêu chuẩn VietQR**: Chuỗi mã QR động được sinh ra PHẢI tuân thủ nghiêm ngặt tiêu chuẩn EMVCo và Napas 24/7. Điều này bao gồm việc tích hợp các thẻ bắt buộc:
+   - **Tích hợp mã QR tĩnh/động linh hoạt**:
+     - *Ưu tiên ảnh QR tĩnh có sẵn*: Hệ thống PHẢI kiểm tra sự hiện diện của tệp cấu hình mã QR tĩnh cố định tại đường dẫn `backend/assets/qr_code.png`. Nếu tệp này tồn tại, hệ thống PHẢI nhúng trực tiếp ảnh QR này vào tệp PDF hóa đơn. Ảnh phải được giữ đúng tỷ lệ khung hình đứng dọc đặc thù của thẻ Techcombank (kích thước đề xuất: rộng `110`, cao `215`), giúp hiển thị trọn vẹn, sắc nét và chuyên nghiệp không bị méo.
+     - *Cơ chế dự phòng động (VietQR Fallback)*: Nếu tệp ảnh tĩnh trên không tồn tại, hệ thống PHẢI tự động chuyển sang cơ chế sinh mã QR động (VietQR) dựa trên thông tin cài đặt ngân hàng (số tài khoản, tên ngân hàng) và số tiền hóa đơn.
+   - **Tiêu chuẩn VietQR (Dành cho cơ chế dự phòng động)**: Chuỗi mã QR động được sinh ra PHẢI tuân thủ nghiêm ngặt tiêu chuẩn EMVCo và Napas 24/7. Điều này bao gồm việc tích hợp các thẻ bắt buộc:
      - *Thẻ 01 (Point of Initiation Method)*: Đặt thành `"12"` (Dynamic QR) khi có số tiền thanh toán, và `"11"` (Static QR) khi không có số tiền.
      - *Thẻ 52 (Merchant Category Code)*: Thiết lập giá trị mặc định là `"0000"`.
      - *Thẻ 59 (Merchant Name)*: Sử dụng tên thương hiệu nhà trọ của chủ trọ (chuẩn hóa thành tiếng Việt không dấu viết hoa) hoặc mặc định `"HOUSE RENTING"`.
