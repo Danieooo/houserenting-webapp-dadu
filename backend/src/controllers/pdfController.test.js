@@ -50,6 +50,13 @@ assert.ok(parseFree3, 'Should parse MB Bank text');
 assert.strictEqual(parseFree3.bankBin, '970422');
 assert.strictEqual(parseFree3.accountNumber, '1122334455');
 
+// Free text: Techcombank space-separated account number (User's actual details)
+const parseFreeTechcom = parsePaymentInfo('Techcombank 1903 2559 1790 19 - VU HAI DANG');
+assert.ok(parseFreeTechcom, 'Should parse space-separated Techcombank text');
+assert.strictEqual(parseFreeTechcom.isRawVietQR, false);
+assert.strictEqual(parseFreeTechcom.bankBin, '970407');
+assert.strictEqual(parseFreeTechcom.accountNumber, '19032559179019');
+
 // Invalid payment info
 assert.strictEqual(parsePaymentInfo(null), null, 'Null should return null');
 assert.strictEqual(parsePaymentInfo(''), null, 'Empty string should return null');

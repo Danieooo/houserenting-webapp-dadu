@@ -77,11 +77,14 @@ const parsePaymentInfo = (text) => {
     return { isRawVietQR: true, rawString: text.trim() };
   }
 
+  // 1. Identify Bank BIN and track matched bank keyword
   let bankBin = null;
+  let matchedBankKey = null;
   const tokens = normalized.split(/[^A-Z0-9]/).filter(t => t.length > 0);
   for (const token of tokens) {
     if (bankBinMap[token]) {
       bankBin = bankBinMap[token];
+      matchedBankKey = token;
       break;
     }
   }
@@ -90,19 +93,41 @@ const parsePaymentInfo = (text) => {
     for (const key of Object.keys(bankBinMap)) {
       if (normalized.includes(key)) {
         bankBin = bankBinMap[key];
+        matchedBankKey = key;
         break;
       }
     }
   }
 
-  const digitMatches = normalized.match(/\d{6,19}/g);
+  if (!bankBin) return null;
+
+  // 2. Extract Account Number (robust against spaces and dashes)
+  let remainingText = normalized;
+  if (matchedBankKey) {
+    remainingText = normalized.replace(matchedBankKey, '');
+  }
+
+  const digitSeqMatches = remainingText.match(/[0-9\s-]{6,30}/g);
+  let candidates = [];
+  if (digitSeqMatches) {
+    for (const match of digitSeqMatches) {
+      const cleaned = match.replace(/\D/g, '');
+      if (cleaned.length >= 6 && cleaned.length <= 19) {
+        candidates.push(cleaned);
+      }
+    }
+  }
+
   let accountNumber = null;
-  if (digitMatches && digitMatches.length > 0) {
-    const candidates = digitMatches.filter(num => num !== bankBin);
-    if (candidates.length > 0) {
-      accountNumber = candidates[0];
+  if (candidates.length > 0) {
+    // Exclude the bankBin if it got matched by accident, and sort by length descending
+    const filtered = candidates.filter(num => num !== bankBin);
+    if (filtered.length > 0) {
+      filtered.sort((a, b) => b.length - a.length);
+      accountNumber = filtered[0];
     } else {
-      accountNumber = digitMatches[0];
+      candidates.sort((a, b) => b.length - a.length);
+      accountNumber = candidates[0];
     }
   }
 

@@ -33,7 +33,7 @@ test.describe('VietQR E2E Validation Scenario', () => {
 
     // Fill settings inputs and click save
     await page.fill('[data-testid="settings-shopName"]', 'Nha Tro E2E Hoa Hong');
-    await page.fill('[data-testid="settings-paymentInfo"]', 'Vietcombank 123456789 - NGUYEN VAN A');
+    await page.fill('[data-testid="settings-paymentInfo"]', 'Techcombank 1903 2559 1790 19 - VU HAI DANG');
     await page.click('[data-testid="settings-save-btn"]');
 
     // Brief wait for settings mutate to save in database
@@ -85,6 +85,7 @@ test.describe('VietQR E2E Validation Scenario', () => {
     // Get room ID from detail link on Rooms page
     await page.click('aside a[href="/rooms"]');
     const roomCardUpdated = page.locator(`[data-testid="room-card-${roomName.replace(/\s+/g, '-')}"]`);
+    await expect(roomCardUpdated).toContainText('Có người');
     const roomDetailLink = roomCardUpdated.locator('a[data-testid^="room-view-detail-"]');
     const roomDetailIdAttr = await roomDetailLink.getAttribute('data-testid');
     const roomId = roomDetailIdAttr.replace('room-view-detail-', '');
@@ -98,6 +99,9 @@ test.describe('VietQR E2E Validation Scenario', () => {
     await page.fill(`[data-testid="bulk-electricity-now-${roomId}"]`, '100');
     await page.fill(`[data-testid="bulk-water-now-${roomId}"]`, '10');
     await page.click('[data-testid="bulk-confirm-btn"]');
+
+    // Wait for the modal to close and the invoices query to refetch and render
+    await page.waitForTimeout(2000);
 
     // Verify invoice row appears
     const now = new Date();
