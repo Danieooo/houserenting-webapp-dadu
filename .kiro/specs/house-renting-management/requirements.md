@@ -60,6 +60,14 @@ Hệ thống được thiết kế với triết lý **Product-Grade** (Chất l
    - Hệ thống PHẢI hỗ trợ tạo file PDF hóa đơn tự động từ backend sử dụng thư viện `pdf-lib`.
    - File PDF PHẢI hiển thị đầy đủ, đẹp mắt tiếng Việt Unicode có dấu (thông qua nhúng font Segoe UI TTF có sẵn) để tránh lỗi hiển thị ô vuông hoặc ký tự lạ.
    - File PDF PHẢI tích hợp tự động mã QR thanh toán ngân hàng (VietQR) dựa trên số tài khoản, tên ngân hàng và số tiền hóa đơn được cấu hình trong phần cài đặt của chủ trọ.
+   - **Tiêu chuẩn VietQR**: Chuỗi mã QR động được sinh ra PHẢI tuân thủ nghiêm ngặt tiêu chuẩn EMVCo và Napas 24/7. Điều này bao gồm việc tích hợp các thẻ bắt buộc:
+     - *Thẻ 01 (Point of Initiation Method)*: Đặt thành `"12"` (Dynamic QR) khi có số tiền thanh toán, và `"11"` (Static QR) khi không có số tiền.
+     - *Thẻ 52 (Merchant Category Code)*: Thiết lập giá trị mặc định là `"0000"`.
+     - *Thẻ 59 (Merchant Name)*: Sử dụng tên thương hiệu nhà trọ của chủ trọ (chuẩn hóa thành tiếng Việt không dấu viết hoa) hoặc mặc định `"HOUSE RENTING"`.
+     - *Thẻ 60 (Merchant City)*: Thiết lập giá trị mặc định là `"HA NOI"`.
+     - *Thẻ 54 (Transaction Amount)*: Số tiền PHẢI là số nguyên làm tròn (vì VND không có phần thập phân).
+     - *Thẻ 62 Sub-tag 08 (Purpose of Transaction)*: Nội dung thanh toán PHẢI được chuẩn hóa thành tiếng Việt không dấu viết hoa không chứa ký tự đặc biệt, giới hạn tối đa 25 ký tự.
+   - **Yêu cầu kiểm thử tự động**: Hệ thống PHẢI có các kịch bản kiểm thử tự động (Unit Test / Integration Test) để kiểm tra thuật toán phân tích thông tin cài đặt ngân hàng (`parsePaymentInfo`) và thuật toán sinh chuỗi VietQR (`buildVietQRString`) nhằm bảo vệ tính bền vững của tính năng thanh toán này trước các lỗi suy thoái (regressions).
 7. **Xuất dữ liệu CSV**: Hệ thống PHẢI cung cấp tính năng xuất toàn bộ danh sách hóa đơn theo năm ra tệp CSV để chủ trọ lưu trữ hoặc nhập vào các phần mềm kế toán khác.
 
 ---

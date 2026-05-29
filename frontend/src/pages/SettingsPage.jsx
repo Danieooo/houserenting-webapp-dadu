@@ -65,6 +65,7 @@ export default function SettingsPage() {
                 value={form?.[key] || ''}
                 onChange={(e) => setForm({ ...form, [key]: e.target.value })}
                 placeholder={placeholder}
+                data-testid={`settings-${key}`}
                 className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 outline-none"
               />
             </div>
@@ -77,11 +78,12 @@ export default function SettingsPage() {
               onChange={(e) => setForm({ ...form, paymentInfo: e.target.value })}
               placeholder="Ví dụ: MB Bank 123456789 - Tên CK: Nguyen Van A\nHoặc nội dung QR MoMo/ZaloPay..."
               rows={4}
+              data-testid="settings-paymentInfo"
               className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 outline-none"
             />
             <p className="text-xs text-muted-foreground mt-2">Nội dung này sẽ được in trên hóa đơn và mã QR sẽ được tạo tự động nếu có.</p>
           </div>
-          <button onClick={() => mutate(form)} disabled={isPending}
+          <button onClick={() => mutate(form)} disabled={isPending} data-testid="settings-save-btn"
             className="flex items-center gap-2 px-5 py-2.5 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 disabled:opacity-60 shadow-sm active:scale-[0.98] transition-all duration-200">
             <Save size={15} /> {isPending ? 'Đang lưu...' : 'Lưu thay đổi'}
           </button>

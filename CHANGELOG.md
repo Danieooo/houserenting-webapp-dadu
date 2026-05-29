@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.3.0] - 2026-05-29
+
+### Added
+- **Bộ kiểm thử đơn vị tự động VietQR (Backend Unit Test)**:
+  - Thêm mới tệp tin [pdfController.test.js](file:///c:/Users/Duyen/Documents/GitHub/houserenting-app/backend/src/controllers/pdfController.test.js) kiểm thử đơn vị độc lập sử dụng module `assert` mặc định của Node.js.
+  - Phủ rộng các test cases kiểm định giải thuật phân tích thông tin cài đặt ngân hàng thụ hưởng (`parsePaymentInfo`) và cấu trúc phân tích Tag EMVCo MPM của giải thuật sinh chuỗi VietQR (`buildVietQRString`) dưới nhiều trường hợp biên.
+  - Bổ sung lệnh chạy test nhanh `"test"` vào [package.json](file:///c:/Users/Duyen/Documents/GitHub/houserenting-app/backend/package.json).
+- **Bộ kiểm thử E2E tự động hóa tích hợp QR & PDF (Playwright E2E)**:
+  - Thêm mới kịch bản kiểm thử E2E Playwright [qr-validation.spec.js](file:///c:/Users/Duyen/Documents/GitHub/houserenting-app/frontend/e2e/qr-validation.spec.js) bao phủ trọn vẹn luồng: Đăng nhập -> Đi tới Cài đặt cấu hình tài khoản ngân hàng thụ hưởng -> Tạo phòng & khách trọ mẫu -> Lập hóa đơn hàng loạt điện nước -> Mở trang chi tiết hóa đơn -> Click tải xuống PDF hóa đơn -> Kiểm chứng tệp PDF được tải xuống thành công (`1 passed` trong 36 giây).
+  - Tích hợp thêm các nhãn thuộc tính kiểm thử bền vững `data-testid` trên các trường của [SettingsPage.jsx](file:///c:/Users/Duyen/Documents/GitHub/houserenting-app/frontend/src/pages/SettingsPage.jsx) (`settings-shopName`, `settings-paymentInfo`, `settings-save-btn`) và nút PDF trên [InvoiceDetailPage.jsx](file:///c:/Users/Duyen/Documents/GitHub/houserenting-app/frontend/src/pages/InvoiceDetailPage.jsx) (`invoice-download-pdf-btn`).
+
+### Changed
+- **Nâng cấp Tiêu chuẩn VietQR tuân thủ 100% EMVCo MPM & Napas 24/7**:
+  - Tái cấu trúc hàm `buildVietQRString` trong [pdfController.js](file:///c:/Users/Duyen/Documents/GitHub/houserenting-app/backend/src/controllers/pdfController.js) tuân thủ nghiêm ngặt các quy định về thẻ bắt buộc và giá trị chuẩn hóa của EMVCo:
+    - *Tag 01 (Point of Initiation Method)*: Động hóa thành `"12"` (Dynamic QR) khi có số tiền thanh toán (thay vì cố định `"11"` gây lỗi quét ở một số app ngân hàng).
+    - *Tag 52 (Merchant Category Code)*: Thêm trường bắt buộc mặc định `"0000"`.
+    - *Tag 59 (Merchant Name)*: Lấy động từ cài đặt `shopName` của chủ trọ và chuẩn hóa sang ASCII viết hoa không dấu (ví dụ: `"NHA TRO HOA HONG"`).
+    - *Tag 60 (Merchant City)*: Thêm trường bắt buộc mặc định `"HA NOI"`.
+    - *Tag 54 (Transaction Amount)*: Ép buộc làm tròn số nguyên (`Math.round`) để tránh phần thập phân gây lỗi.
+    - *Tag 62 Sub-tag 08 (Purpose of Transaction)*: Chuẩn hóa nội dung mô tả chuyển khoản thành chữ hoa không dấu không ký tự đặc biệt, giới hạn tối đa 25 ký tự.
+
+---
+
 ## [1.2.0] - 2026-05-29
 
 ### Added

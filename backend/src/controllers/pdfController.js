@@ -112,14 +112,14 @@ const parsePaymentInfo = (text) => {
   return null;
 };
 
-const buildVietQRString = (bankBin, accountNumber, amount, description) => {
+const buildVietQRString = (bankBin, accountNumber, amount, description, merchantName = 'HOUSE RENTING', merchantCity = 'HA NOI') => {
   const formatTag = (id, value) => {
     const len = value.length.toString().padStart(2, '0');
     return `${id}${len}${value}`;
   };
 
   let qrStr = formatTag('00', '01');
-  qrStr += formatTag('01', '11');
+  qrStr += formatTag('01', (amount && amount > 0) ? '12' : '11');
 
   const aidTag = formatTag('00', 'A000000727');
   const bankTag = formatTag('00', bankBin);
@@ -131,13 +131,42 @@ const buildVietQRString = (bankBin, accountNumber, amount, description) => {
   const merchantAccountValue = aidTag + consumerInfoTag + serviceCodeTag;
   qrStr += formatTag('38', merchantAccountValue);
 
+  // Tag 52: Merchant Category Code (Mandatory under EMVCo, default 0000)
+  qrStr += formatTag('52', '0000');
+
+  // Tag 53: Transaction Currency (704 for VND)
   qrStr += formatTag('53', '704');
 
   if (amount && amount > 0) {
-    qrStr += formatTag('54', amount.toString());
+    qrStr += formatTag('54', Math.round(amount).toString());
   }
 
+  // Tag 58: Country Code (VN)
   qrStr += formatTag('58', 'VN');
+
+  // Tag 59: Merchant Name (Mandatory, max 25 chars)
+  const normName = (merchantName || 'HOUSE RENTING')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/đ/g, 'd')
+    .replace(/Đ/g, 'D')
+    .toUpperCase()
+    .replace(/[^A-Z0-9 ]/g, '')
+    .trim()
+    .substring(0, 25) || 'HOUSE RENTING';
+  qrStr += formatTag('59', normName);
+
+  // Tag 60: Merchant City (Mandatory, max 15 chars)
+  const normCity = (merchantCity || 'HA NOI')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/đ/g, 'd')
+    .replace(/Đ/g, 'D')
+    .toUpperCase()
+    .replace(/[^A-Z0-9 ]/g, '')
+    .trim()
+    .substring(0, 15) || 'HA NOI';
+  qrStr += formatTag('60', normCity);
 
   if (description) {
     const normalizedDesc = description
@@ -145,7 +174,10 @@ const buildVietQRString = (bankBin, accountNumber, amount, description) => {
       .replace(/[\u0300-\u036f]/g, '')
       .replace(/đ/g, 'd')
       .replace(/Đ/g, 'D')
-      .replace(/[^a-zA-Z0-9 ]/g, '')
+      .toUpperCase()
+      .replace(/[^A-Z0-9 ]/g, '')
+      .trim()
+      .replace(/\s+/g, ' ')
       .substring(0, 25);
     const purposeTag = formatTag('08', normalizedDesc);
     qrStr += formatTag('62', purposeTag);
@@ -279,7 +311,8 @@ exports.getInvoicePdf = async (req, res, next) => {
             finalQrPayload = parsed.rawString;
           } else {
             const memo = `PHONG ${invoice.room.name.toUpperCase()} TT TIEN NHA T${invoice.month}`;
-            finalQrPayload = buildVietQRString(parsed.bankBin, parsed.accountNumber, invoice.totalAmount, memo);
+            const merchantName = settings.shopName || 'HOUSE RENTING';
+            finalQrPayload = buildVietQRString(parsed.bankBin, parsed.accountNumber, invoice.totalAmount, memo, merchantName);
           }
         }
       } catch (err) {
@@ -325,3 +358,6 @@ exports.getInvoicePdf = async (req, res, next) => {
     res.send(Buffer.from(pdfBytes));
   } catch (err) { next(err); }
 };
+
+exports.parsePaymentInfo = parsePaymentInfo;
+exports.buildVietQRString = buildVietQRString;

@@ -70,7 +70,7 @@ export default function InvoiceDetailPage() {
             <p className="text-sm text-muted-foreground">Kỳ tính: {formatDate(invoice.periodStart)} – {formatDate(invoice.periodEnd)}</p>
           </div>
           <div className="flex gap-2">
-            <button onClick={downloadPdf} className="flex items-center gap-1.5 px-3 py-2 border rounded-lg text-xs font-medium hover:bg-gray-50">
+            <button onClick={downloadPdf} data-testid="invoice-download-pdf-btn" className="flex items-center gap-1.5 px-3 py-2 border rounded-lg text-xs font-medium hover:bg-gray-50">
               <Download size={13} /> PDF
             </button>
             {!invoice.paid && (

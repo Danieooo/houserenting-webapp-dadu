@@ -64,8 +64,9 @@ Dự án hiện tại được quản lý nghiêm ngặt bởi bộ tài liệu 
 
 ## 5. System Status & Milestone Progress (Trạng thái hệ thống & Tiến độ)
 
-Hiện tại hệ thống đã hoàn thành xuất sắc đợt cải tiến lớn (Phiên bản `1.2.0`):
+Hiện tại hệ thống đã hoàn thành xuất sắc đợt cải tiến lớn (Phiên bản `1.3.0`):
 *   **Task 11: Heuristic UI/UX Polish**: Đã bổ sung các màn hình chờ Skeleton co giãn mượt mà cho toàn bộ danh sách phòng, danh sách hóa đơn, khách thuê, chi tiết phòng và cài đặt. Cải tiến hiển thị lỗi chi tiết tiếng Việt và tự động đóng banner khi API thức giấc thành công.
 *   **Task 12: Responsive Polish**: Sửa triệt để các lỗi tràn viền chiều ngang (`overflow-x`) trên di động cho bảng hóa đơn và dashboard. Tối ưu hóa Recharts ResponsiveContainer co giãn mượt mà trên Mobile (375px), Tablet (768px).
 *   **Task 13: UI Automation Testing**: Tích hợp Playwright E2E. Cài đặt các thẻ `data-testid` định danh kiểm thử chuẩn xác trên tất cả các trang. Thiết lập kịch bản `happy-path.spec.js` chạy 100% bằng định tuyến client-side router, bảo toàn Zustand state (accessToken), loại bỏ hoàn toàn hiện tượng Silent Refresh race condition. Chạy test Playwright E2E thành công rực rỡ (`1 passed` trong 34 giây).
+*   **Task 16: VietQR Standards & QR Testing**: Nâng cấp bộ sinh mã QR thanh toán động VietQR đạt chuẩn 100% EMVCo MPM & Napas 24/7 (hỗ trợ dynamic Tag 01, làm tròn số tiền Tag 54, bổ sung Tag 52, 59, 60, và chuẩn hóa nội dung mô tả chuyển khoản Tag 62). Viết unit test backend sử dụng module native `assert` bảo phủ các trường hợp biên. Xây dựng kịch bản kiểm thử E2E Playwright `qr-validation.spec.js` xác định thành công luồng cấu hình cài đặt và tải PDF hóa đơn chứa mã QR động VietQR thành công (`1 passed` trong 36 giây).
 

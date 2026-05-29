@@ -224,6 +224,36 @@ model Invoice {
 
 ---
 
+## VietQR Code Specification (EMVCo MPM Standard)
+
+Kiến trúc sinh mã thanh toán VietQR trên hệ thống tuân thủ mô hình **EMVCo Merchant-Presented Mode (MPM)** để đảm bảo khả năng quét chính xác 100% trên tất cả ứng dụng ngân hàng di động tại Việt Nam:
+
+### 1. Phân định Cấu trúc Tag EMVCo
+Chuỗi ký tự VietQR được phân tích và sinh tự động gồm các trường (Tag-Length-Value):
+- **Tag 00 (Payload Format Indicator)**: Cố định `"01"`
+- **Tag 01 (Point of Initiation Method)**: 
+  - `"11"` (Static QR): Sử dụng khi không đính kèm số tiền cụ thể trong cài đặt hoặc khi hóa đơn không có số tiền.
+  - `"12"` (Dynamic QR): Bắt buộc khi có số tiền giao dịch cụ thể (`amount > 0`). Giúp ứng dụng ngân hàng khóa trường nhập số tiền, ngăn chặn khách thuê nhập sai số tiền hóa đơn.
+- **Tag 38 (Merchant Account Information - Napas)**:
+  - *AID (Tag 00)*: `"A000000727"` (Napas AID).
+  - *Napas Consumer Info (Tag 01)*: Chứa Bank BIN (Sub-tag 00, 6 chữ số) và Số tài khoản (Sub-tag 01, tối đa 19 ký tự số).
+  - *Service Code (Tag 02)*: `"QRIBFTTA"` (Chuyển khoản nhanh Napas 24/7 đến Tài khoản).
+- **Tag 52 (Merchant Category Code)**: Cấu hình mặc định `"0000"` (Bắt buộc theo chuẩn EMVCo).
+- **Tag 53 (Transaction Currency)**: `"704"` (Mã tiền tệ VND).
+- **Tag 54 (Transaction Amount)**: Giá trị hóa đơn làm tròn số nguyên (`Math.round(totalAmount)`).
+- **Tag 58 (Country Code)**: `"VN"`.
+- **Tag 59 (Merchant Name)**: Tên thương hiệu nhà trọ, chuẩn hóa không dấu viết hoa (`shopName` của chủ trọ) hoặc mặc định `"HOUSE RENTING"`.
+- **Tag 60 (Merchant City)**: Cố định `"HA NOI"` (Hoặc thành phố từ cài đặt nếu hợp lệ).
+- **Tag 62 (Additional Data Field Template)**:
+  - *Reference Label (Tag 08)*: Nội dung chuyển khoản chuẩn hóa không dấu viết hoa (ví dụ: `"PHONG 101 TT TIEN NHA T5"`), tối đa 25 ký tự.
+- **Tag 63 (CRC-16 Checksum)**: 4 ký tự Hex viết hoa, tính bằng thuật toán CRC-16 CCITT (polynomial: `0x1021`, initial value: `0xFFFF`, no final XOR).
+
+### 2. Thuật toán kiểm soát chất lượng & Kiểm thử
+- **Unit Test độc lập**: Viết kịch bản kiểm thử độc lập chạy trực tiếp trên Backend để xác thực hai hàm cốt lõi `parsePaymentInfo` và `buildVietQRString` với các trường hợp biên (tên ngân hàng viết thường/viết hoa/viết tắt, số tài khoản có ký tự đặc biệt, số tiền lẻ thập phân, nội dung chuyển khoản tiếng Việt có dấu phức tạp).
+- **Happy Path Integration**: Trình giả lập E2E Playwright sẽ kiểm duyệt việc hiển thị giao diện xem trước hóa đơn có cấu hình tài khoản ngân hàng và kiểm duyệt API endpoint tải PDF trả về đúng tệp nhúng luồng QR.
+
+---
+
 ## Error Handling
 
 Hệ thống xử lý lỗi đồng bộ trên cả Frontend và Backend để đảm bảo tính kiên cố và thân thiện với người dùng:
