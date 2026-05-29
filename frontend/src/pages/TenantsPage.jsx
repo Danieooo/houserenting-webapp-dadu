@@ -107,6 +107,8 @@ function TenantForm({ onClose, initialData }) {
   );
 }
 
+import { SkeletonCard } from '../components/Skeleton';
+
 export default function TenantsPage() {
   const [editingTenant, setEditingTenant] = useState(null);
   const [showForm, setShowForm] = useState(false);
@@ -155,7 +157,7 @@ export default function TenantsPage() {
 
       {isLoading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {[...Array(3)].map((_, i) => <div key={i} className="h-40 bg-gray-100 rounded-xl animate-pulse" />)}
+          {[...Array(6)].map((_, i) => <SkeletonCard key={i} />)}
         </div>
       ) : tenants.length === 0 ? (
         <div className="text-center py-20 text-muted-foreground">

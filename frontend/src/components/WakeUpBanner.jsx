@@ -6,7 +6,10 @@ export default function WakeUpBanner() {
 
   useEffect(() => {
     const timer = setTimeout(() => setWaking(true), 10000);
-    API.get('/health').then(() => clearTimeout(timer)).catch(() => {});
+    API.get('/health').then(() => {
+      clearTimeout(timer);
+      setWaking(false);
+    }).catch(() => {});
     return () => clearTimeout(timer);
   }, []);
 

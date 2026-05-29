@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import { getInvoicesApi, bulkCreateInvoicesApi, deleteInvoiceApi, getRoomsApi } from '../services/api';
 import { formatCurrency, formatDate } from '../lib/utils';
 import { Plus, Trash2, Eye, FileText, Zap } from 'lucide-react';
+import { SkeletonTable } from '../components/Skeleton';
 
 function BulkCreateDialog({ onClose }) {
   const qc = useQueryClient();
@@ -162,12 +163,12 @@ export default function InvoicesPage() {
       </div>
 
       {isLoading ? (
-        <div className="space-y-2">{[...Array(5)].map((_, i) => <div key={i} className="h-14 bg-gray-100 rounded-xl animate-pulse" />)}</div>
+        <SkeletonTable />
       ) : invoices.length === 0 ? (
         <div className="text-center py-20 text-muted-foreground"><FileText size={48} className="mx-auto mb-4 opacity-30" /><p>Không có hóa đơn nào</p></div>
       ) : (
-        <div className="bg-white rounded-xl border shadow-sm overflow-hidden">
-          <table className="w-full text-sm">
+        <div className="bg-white rounded-xl border shadow-sm overflow-x-auto">
+          <table className="w-full min-w-[600px] text-sm">
             <thead className="bg-gray-50 border-b">
               <tr>{['Tháng', 'Phòng', 'Khách thuê', 'Tổng tiền', 'Trạng thái', 'Hành động'].map(h => <th key={h} className="text-left px-4 py-3 font-medium text-muted-foreground">{h}</th>)}</tr>
             </thead>

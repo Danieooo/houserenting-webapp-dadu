@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 import { getSettingsApi, updateSettingsApi, exportInvoicesCsvApi } from '../services/api';
 import { Save, Download, Settings } from 'lucide-react';
+import { SkeletonDetail } from '../components/Skeleton';
 
 export default function SettingsPage() {
   const qc = useQueryClient();
@@ -39,7 +40,7 @@ export default function SettingsPage() {
     } catch { toast.error('Lỗi xuất dữ liệu'); }
   };
 
-  if (isLoading) return <div className="animate-pulse h-64 bg-gray-100 rounded-xl" />;
+  if (isLoading) return <SkeletonDetail />;
 
   return (
     <div className="space-y-6 max-w-2xl">

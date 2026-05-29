@@ -22,18 +22,24 @@ function StatCard({ title, value, subtitle, icon: Icon, colorGradient }) {
   );
 }
 
+import { SkeletonDashboard } from '../components/Skeleton';
+
 export default function DashboardPage() {
-  const { data: summaryRes } = useQuery({ queryKey: ['dashboard-summary'], queryFn: getDashboardSummaryApi });
-  const { data: unpaidRes } = useQuery({ queryKey: ['dashboard-unpaid'], queryFn: getUnpaidInvoicesApi });
-  const { data: expiringRes } = useQuery({ queryKey: ['dashboard-expiring'], queryFn: getExpiringTenantsApi });
-  const { data: revenueRes } = useQuery({ queryKey: ['dashboard-revenue'], queryFn: getRevenueChartApi });
-  const { data: occupancyRes } = useQuery({ queryKey: ['dashboard-occupancy'], queryFn: getOccupancyChartApi });
+  const { data: summaryRes, isLoading: loadingSummary } = useQuery({ queryKey: ['dashboard-summary'], queryFn: getDashboardSummaryApi });
+  const { data: unpaidRes, isLoading: loadingUnpaid } = useQuery({ queryKey: ['dashboard-unpaid'], queryFn: getUnpaidInvoicesApi });
+  const { data: expiringRes, isLoading: loadingExpiring } = useQuery({ queryKey: ['dashboard-expiring'], queryFn: getExpiringTenantsApi });
+  const { data: revenueRes, isLoading: loadingRevenue } = useQuery({ queryKey: ['dashboard-revenue'], queryFn: getRevenueChartApi });
+  const { data: occupancyRes, isLoading: loadingOccupancy } = useQuery({ queryKey: ['dashboard-occupancy'], queryFn: getOccupancyChartApi });
 
   const summary = summaryRes?.data?.data || {};
   const unpaid = unpaidRes?.data?.data || [];
   const expiring = expiringRes?.data?.data || [];
   const revenueData = revenueRes?.data?.data || [];
   const occupancyData = occupancyRes?.data?.data || [];
+
+  const isLoading = loadingSummary || loadingUnpaid || loadingExpiring || loadingRevenue || loadingOccupancy;
+
+  if (isLoading) return <SkeletonDashboard />;
 
   return (
     <div className="space-y-6">
@@ -72,10 +78,10 @@ export default function DashboardPage() {
         <div className="bg-white rounded-xl border p-6 shadow-sm">
           <h2 className="font-semibold mb-4">Doanh thu 6 tháng gần nhất</h2>
           <ResponsiveContainer width="100%" height={220}>
-            <BarChart data={revenueData}>
+            <BarChart data={revenueData} margin={{ top: 10, right: 5, left: -20, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-              <XAxis dataKey="month" tick={{ fontSize: 11 }} />
-              <YAxis tickFormatter={(v) => `${(v/1000000).toFixed(1)}M`} tick={{ fontSize: 11 }} />
+              <XAxis dataKey="month" tick={{ fontSize: 10 }} />
+              <YAxis tickFormatter={(v) => `${(v/1000000).toFixed(1)}M`} tick={{ fontSize: 10 }} />
               <Tooltip formatter={(v) => formatCurrency(v)} />
               <Bar dataKey="revenue" fill="hsl(221.2 83.2% 53.3%)" radius={[4,4,0,0]} />
             </BarChart>
@@ -85,10 +91,10 @@ export default function DashboardPage() {
         <div className="bg-white rounded-xl border p-6 shadow-sm">
           <h2 className="font-semibold mb-4">Tỷ lệ lấp đầy 6 tháng gần nhất</h2>
           <ResponsiveContainer width="100%" height={220}>
-            <LineChart data={occupancyData}>
+            <LineChart data={occupancyData} margin={{ top: 10, right: 5, left: -20, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-              <XAxis dataKey="month" tick={{ fontSize: 11 }} />
-              <YAxis domain={[0, 100]} tickFormatter={(v) => `${v}%`} tick={{ fontSize: 11 }} />
+              <XAxis dataKey="month" tick={{ fontSize: 10 }} />
+              <YAxis domain={[0, 100]} tickFormatter={(v) => `${v}%`} tick={{ fontSize: 10 }} />
               <Tooltip formatter={(v) => `${v}%`} />
               <Line type="monotone" dataKey="rate" stroke="#10b981" strokeWidth={2} dot={{ fill: '#10b981' }} />
             </LineChart>

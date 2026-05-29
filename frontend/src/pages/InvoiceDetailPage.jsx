@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import { getInvoiceApi, updateInvoiceApi, markInvoicePaidApi, getInvoicePdfApi } from '../services/api';
 import { formatCurrency, formatDate } from '../lib/utils';
 import { ArrowLeft, Download, CheckCircle2, Edit2, Save, X } from 'lucide-react';
+import { SkeletonDetail } from '../components/Skeleton';
 
 export default function InvoiceDetailPage() {
   const { id } = useParams();
@@ -47,7 +48,7 @@ export default function InvoiceDetailPage() {
     } catch { toast.error('Lỗi tải PDF'); }
   };
 
-  if (isLoading) return <div className="animate-pulse h-64 bg-gray-100 rounded-xl" />;
+  if (isLoading) return <SkeletonDetail />;
   if (!invoice) return <p className="text-muted-foreground">Không tìm thấy hóa đơn.</p>;
 
   const elecUsed = invoice.electricityNow - invoice.electricityPrev;

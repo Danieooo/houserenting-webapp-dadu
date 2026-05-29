@@ -4,12 +4,14 @@ import { getRoomApi } from '../services/api';
 import { formatCurrency, formatDate, ROOM_STATUS_LABELS, ROOM_STATUS_COLORS } from '../lib/utils';
 import { ArrowLeft, FileText } from 'lucide-react';
 
+import { SkeletonDetail } from '../components/Skeleton';
+
 export default function RoomDetailPage() {
   const { id } = useParams();
   const { data, isLoading } = useQuery({ queryKey: ['room', id], queryFn: () => getRoomApi(id) });
   const room = data?.data?.data;
 
-  if (isLoading) return <div className="animate-pulse h-64 bg-gray-100 rounded-xl" />;
+  if (isLoading) return <SkeletonDetail />;
   if (!room) return <p className="text-muted-foreground">Không tìm thấy phòng.</p>;
 
   return (
