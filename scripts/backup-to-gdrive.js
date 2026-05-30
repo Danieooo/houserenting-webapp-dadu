@@ -67,7 +67,7 @@ async function runBackup() {
 
     for (const table of tables) {
       console.log(`[GDrive Backup] Fetching table "${table}"...`);
-      const res = await client.query(`SELECT * FROM "${table}"`);
+      const res = await client.query(`SELECT * FROM "public"."${table}"`);
       backupData.tables[table] = res.rows;
       console.log(`[GDrive Backup] -> Fetched ${res.rows.length} rows from "${table}"`);
     }

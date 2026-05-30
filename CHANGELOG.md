@@ -18,6 +18,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Khắc phục lỗi `Foreign key constraint violated: Tenant_roomId_fkey` khi cố gắng xóa phòng trọ trên hệ thống.
   - Sửa đổi hàm `deleteRoom` trong [roomController.js](file:///c:/Users/Duyen/Documents/GitHub/houserenting-app/backend/src/controllers/roomController.js) (dòng 77-100) sắp xếp lại thứ tự thực hiện các câu lệnh xóa trong `prisma.$transaction` đồng bộ: Hóa đơn (`Invoice`) -> Tài liệu khách thuê (`TenantFile`) -> Thông tin khách thuê (`Tenant`) -> Phòng trọ (`Room`).
   - Đảm bảo an toàn 100% khi xóa phòng có các thông tin khách thuê lịch sử (`active = false`) hay hóa đơn đã xuất mà không gây lỗi khóa ngoại.
+- **Sửa lỗi phân giải search path cơ sở dữ liệu khi backup (Explicit Schema Prefix)**:
+  - Bổ sung tiền tố schema `"public"` cho các truy vấn bảng trong [backup-to-gdrive.js](file:///c:/Users/Duyen/Documents/GitHub/houserenting-app/scripts/backup-to-gdrive.js) (truy vấn `"public"."User"`, `"public"."Room"`,...) tránh lỗi `relation "User" does not exist` do sự không đồng nhất về đường dẫn tìm kiếm mặc định (`search_path`) của kết nối PostgreSQL.
 
 ### Verified
 - ✅ Chạy kiểm thử đơn vị backend: `npm run test` vượt qua thành công, đảm bảo các hàm VietQR hoạt động bình thường.
