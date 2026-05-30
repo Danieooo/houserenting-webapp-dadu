@@ -1,12 +1,18 @@
+const { Client } = require('pg');
 const { google } = require('googleapis');
 const fs = require('fs');
-const path = require('path');
 
 async function runBackup() {
-  console.log('[GDrive Backup] Starting backup upload...');
+  console.log('[GDrive Backup] Starting self-contained backup process...');
 
+  const dbUrl = process.env.DATABASE_URL;
   const serviceAccountKey = process.env.GOOGLE_SERVICE_ACCOUNT_KEY;
   const folderId = process.env.GOOGLE_DRIVE_FOLDER_ID;
+
+  if (!dbUrl) {
+    console.error('[GDrive Backup] Error: DATABASE_URL is missing!');
+    process.exit(1);
+  }
 
   if (!serviceAccountKey) {
     console.error('[GDrive Backup] Error: GOOGLE_SERVICE_ACCOUNT_KEY is missing!');
@@ -18,6 +24,9 @@ async function runBackup() {
     process.exit(1);
   }
 
+  // Clean the database URL (strip leading/trailing double quotes)
+  const cleanDbUrl = dbUrl.replace(/^"/, '').replace(/"$/, '');
+
   let credentials;
   try {
     credentials = JSON.parse(serviceAccountKey);
@@ -26,12 +35,42 @@ async function runBackup() {
     process.exit(1);
   }
 
-  const backupFilePath = path.join(__dirname, '..', 'backup.sql');
-  if (!fs.existsSync(backupFilePath)) {
-    console.error(`[GDrive Backup] Error: Backup file not found at ${backupFilePath}`);
+  const backupData = {
+    timestamp: new Date().toISOString(),
+    version: '1.4.0',
+    tables: {}
+  };
+
+  const tables = ['User', 'RefreshToken', 'Settings', 'Room', 'Tenant', 'TenantFile', 'Invoice'];
+
+  console.log('[GDrive Backup] Connecting to Neon PostgreSQL database...');
+  const client = new Client({
+    connectionString: cleanDbUrl,
+    ssl: { rejectUnauthorized: false } // Required for Neon secure connection
+  });
+
+  try {
+    await client.connect();
+    console.log('[GDrive Backup] Connected successfully! Fetching table data...');
+
+    for (const table of tables) {
+      console.log(`[GDrive Backup] Fetching table "${table}"...`);
+      const res = await client.query(`SELECT * FROM "${table}"`);
+      backupData.tables[table] = res.rows;
+      console.log(`[GDrive Backup] -> Fetched ${res.rows.length} rows from "${table}"`);
+    }
+
+    console.log('[GDrive Backup] ✅ All tables fetched successfully!');
+  } catch (error) {
+    console.error('[GDrive Backup] ❌ Database extraction failed:', error.message);
     process.exit(1);
+  } finally {
+    try {
+      await client.end();
+    } catch (e) {}
   }
 
+  // Now, upload to Google Drive
   try {
     const auth = new google.auth.JWT(
       credentials.client_email,
@@ -43,7 +82,7 @@ async function runBackup() {
     const drive = google.drive({ version: 'v3', auth });
 
     const todayStr = new Date().toISOString().split('T')[0];
-    const fileName = `house-renting-backup-${todayStr}.sql`;
+    const fileName = `house-renting-backup-${todayStr}.json`;
 
     console.log(`[GDrive Backup] Uploading file '${fileName}' to GDrive folder '${folderId}'...`);
 
@@ -52,9 +91,13 @@ async function runBackup() {
       parents: [folderId],
     };
 
+    // Serialize data to JSON string buffer
+    const jsonString = JSON.stringify(backupData, null, 2);
+    const bufferStream = require('stream').Readable.from([jsonString]);
+
     const media = {
-      mimeType: 'text/plain',
-      body: fs.createReadStream(backupFilePath),
+      mimeType: 'application/json',
+      body: bufferStream,
     };
 
     const response = await drive.files.create({
@@ -63,10 +106,11 @@ async function runBackup() {
       fields: 'id, name, webViewLink',
     });
 
-    console.log(`[GDrive Backup] ✅ Success! Uploaded successfully. GDrive File ID: ${response.data.id}`);
+    console.log(`[GDrive Backup] ✅ Success! Database backup saved to Google Drive.`);
+    console.log(`[GDrive Backup] GDrive File ID: ${response.data.id}`);
     console.log(`[GDrive Backup] WebView Link: ${response.data.webViewLink}`);
   } catch (error) {
-    console.error('[GDrive Backup] ❌ Error during upload:', error.message);
+    console.error('[GDrive Backup] ❌ Google Drive upload failed:', error.message);
     process.exit(1);
   }
 }
