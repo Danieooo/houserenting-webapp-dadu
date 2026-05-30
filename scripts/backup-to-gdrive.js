@@ -50,7 +50,13 @@ async function runBackup() {
 
   try {
     await client.connect();
-    console.log('[GDrive Backup] Connected successfully! Fetching table data...');
+    console.log('[GDrive Backup] Connected successfully!');
+    
+    // Print all existing tables in public schema for debugging
+    const tablesCheck = await client.query("SELECT table_name FROM information_schema.tables WHERE table_schema='public'");
+    console.log('[GDrive Backup] Debug - Tables found in public schema:', tablesCheck.rows.map(r => r.table_name).join(', ') || 'NONE');
+
+    console.log('[GDrive Backup] Fetching table data...');
 
     for (const table of tables) {
       console.log(`[GDrive Backup] Fetching table "${table}"...`);
