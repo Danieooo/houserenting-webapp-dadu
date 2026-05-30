@@ -81,7 +81,19 @@ exports.deleteRoom = async (req, res, next) => {
     if (room.status === 'OCCUPIED') {
       return res.status(400).json({ success: false, message: 'Không thể xóa phòng đang có người thuê', code: 'ROOM_OCCUPIED' });
     }
-    await prisma.room.delete({ where: { id: room.id } });
+
+    // Thực hiện xóa cascade các dữ liệu liên quan trong một Transaction đồng bộ
+    await prisma.$transaction([
+      // Xóa tất cả tài liệu đính kèm của khách thuê thuộc phòng này
+      prisma.tenantFile.deleteMany({ where: { tenant: { roomId: room.id } } }),
+      // Xóa tất cả lịch sử khách thuê (bao gồm cả active = false) thuộc phòng này
+      prisma.tenant.deleteMany({ where: { roomId: room.id } }),
+      // Xóa tất cả hóa đơn liên quan đến phòng này
+      prisma.invoice.deleteMany({ where: { roomId: room.id } }),
+      // Cuối cùng là xóa phòng
+      prisma.room.delete({ where: { id: room.id } })
+    ]);
+
     res.json({ success: true, message: 'Đã xóa phòng' });
   } catch (err) { next(err); }
 };
