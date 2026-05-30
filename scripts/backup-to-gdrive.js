@@ -5,16 +5,14 @@ async function runBackup() {
   console.log('[GDrive Backup] Starting self-contained backup process...');
 
   const dbUrl = process.env.DATABASE_URL;
-  const serviceAccountKey = process.env.GOOGLE_SERVICE_ACCOUNT_KEY;
   const folderId = process.env.GOOGLE_DRIVE_FOLDER_ID;
+  const serviceAccountKey = process.env.GOOGLE_SERVICE_ACCOUNT_KEY;
+  const clientId = process.env.GOOGLE_CLIENT_ID;
+  const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
+  const refreshToken = process.env.GOOGLE_REFRESH_TOKEN;
 
   if (!dbUrl) {
     console.error('[GDrive Backup] Error: DATABASE_URL is missing!');
-    process.exit(1);
-  }
-
-  if (!serviceAccountKey) {
-    console.error('[GDrive Backup] Error: GOOGLE_SERVICE_ACCOUNT_KEY is missing!');
     process.exit(1);
   }
 
@@ -23,15 +21,24 @@ async function runBackup() {
     process.exit(1);
   }
 
+  const isOAuth2 = !!refreshToken && !!clientId && !!clientSecret;
+
+  if (!isOAuth2 && !serviceAccountKey) {
+    console.error('[GDrive Backup] Error: Neither GOOGLE_SERVICE_ACCOUNT_KEY nor GOOGLE_REFRESH_TOKEN (along with Client ID & Secret) is configured!');
+    process.exit(1);
+  }
+
   // Clean the database URL (strip leading/trailing double quotes)
   const cleanDbUrl = dbUrl.replace(/^"/, '').replace(/"$/, '');
 
   let credentials;
-  try {
-    credentials = JSON.parse(serviceAccountKey);
-  } catch (err) {
-    console.error('[GDrive Backup] Error parsing GOOGLE_SERVICE_ACCOUNT_KEY JSON:', err.message);
-    process.exit(1);
+  if (!isOAuth2 && serviceAccountKey) {
+    try {
+      credentials = JSON.parse(serviceAccountKey);
+    } catch (err) {
+      console.error('[GDrive Backup] Error parsing GOOGLE_SERVICE_ACCOUNT_KEY JSON:', err.message);
+      process.exit(1);
+    }
   }
 
   const backupData = {
@@ -77,21 +84,27 @@ async function runBackup() {
 
   // Now, upload to Google Drive
   try {
-    console.log('[GDrive Backup] Authenticating with Google Drive API...');
-    
-    // Clean and fix private key newlines in case it was escaped in GitHub Secrets
-    const privateKey = credentials.private_key.replace(/\\n/g, '\n');
-
-    const auth = new google.auth.GoogleAuth({
-      credentials: {
-        client_email: credentials.client_email,
-        private_key: privateKey,
-      },
-      scopes: [
-        'https://www.googleapis.com/auth/drive.file',
-        'https://www.googleapis.com/auth/drive'
-      ],
-    });
+    let auth;
+    if (isOAuth2) {
+      console.log('[GDrive Backup] Authenticating with Google Drive API via OAuth2 (User Account)...');
+      const oauth2Client = new google.auth.OAuth2(clientId, clientSecret);
+      oauth2Client.setCredentials({ refresh_token: refreshToken });
+      auth = oauth2Client;
+    } else {
+      console.log('[GDrive Backup] Authenticating with Google Drive API via Service Account...');
+      // Clean and fix private key newlines in case it was escaped in GitHub Secrets
+      const privateKey = credentials.private_key.replace(/\\n/g, '\n');
+      auth = new google.auth.GoogleAuth({
+        credentials: {
+          client_email: credentials.client_email,
+          private_key: privateKey,
+        },
+        scopes: [
+          'https://www.googleapis.com/auth/drive.file',
+          'https://www.googleapis.com/auth/drive'
+        ],
+      });
+    }
 
     const drive = google.drive({ version: 'v3', auth });
 
@@ -118,6 +131,7 @@ async function runBackup() {
       resource: fileMetadata,
       media: media,
       fields: 'id, name, webViewLink',
+      supportsAllDrives: true // Bật để hỗ trợ tải lên các thư mục thuộc Shared Drives nếu có
     });
 
     console.log(`[GDrive Backup] ✅ Success! Database backup saved to Google Drive.`);

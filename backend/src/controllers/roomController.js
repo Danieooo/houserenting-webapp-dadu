@@ -83,14 +83,15 @@ exports.deleteRoom = async (req, res, next) => {
     }
 
     // Thực hiện xóa cascade các dữ liệu liên quan trong một Transaction đồng bộ
+    // Thứ tự xóa bắt buộc: Hóa đơn -> Tài liệu CCCD/Hợp đồng -> Khách thuê -> Phòng
     await prisma.$transaction([
-      // Xóa tất cả tài liệu đính kèm của khách thuê thuộc phòng này
-      prisma.tenantFile.deleteMany({ where: { tenant: { roomId: room.id } } }),
-      // Xóa tất cả lịch sử khách thuê (bao gồm cả active = false) thuộc phòng này
-      prisma.tenant.deleteMany({ where: { roomId: room.id } }),
-      // Xóa tất cả hóa đơn liên quan đến phòng này
+      // 1. Xóa tất cả hóa đơn liên quan đến phòng này trước (để tránh Invoice_tenantId_fkey vi phạm)
       prisma.invoice.deleteMany({ where: { roomId: room.id } }),
-      // Cuối cùng là xóa phòng
+      // 2. Xóa tất cả tài liệu đính kèm CCCD/Hợp đồng của khách thuê thuộc phòng này
+      prisma.tenantFile.deleteMany({ where: { tenant: { roomId: room.id } } }),
+      // 3. Xóa tất cả lịch sử khách thuê (bao gồm cả active = false) thuộc phòng này
+      prisma.tenant.deleteMany({ where: { roomId: room.id } }),
+      // 4. Cuối cùng là xóa bản ghi phòng
       prisma.room.delete({ where: { id: room.id } })
     ]);
 

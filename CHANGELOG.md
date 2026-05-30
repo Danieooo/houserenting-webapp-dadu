@@ -5,6 +5,26 @@ All notable changes to the **House Renting App** project will be documented in t
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.1] - 2026-05-31
+
+### Added
+- **Hỗ trợ Sao lưu Google Drive qua Tài khoản Cá nhân (OAuth2 support)**:
+  - Nâng cấp script [backup-to-gdrive.js](file:///c:/Users/Duyen/Documents/GitHub/houserenting-app/scripts/backup-to-gdrive.js) hỗ trợ cơ chế xác thực kép. Nếu chủ trọ cấu hình các biến môi trường OAuth2 `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, và `GOOGLE_REFRESH_TOKEN`, hệ thống sẽ tự động dùng quyền truy cập tài khoản người dùng cá nhân thay thế cho Service Account.
+  - Giải quyết triệt để lỗi giới hạn dung lượng lưu trữ `403: Service Accounts do not have storage quota` trên các tài khoản Gmail cá nhân miễn phí.
+  - Cập nhật [.github/workflows/daily-backup.yml](file:///c:/Users/Duyen/Documents/GitHub/houserenting-app/.github/workflows/daily-backup.yml) chuyển tiếp các biến môi trường bí mật này sang runner.
+
+### Fixed
+- **Sửa lỗi ràng buộc khóa ngoại khi xóa phòng (Cascade Deletion Order Fix)**:
+  - Khắc phục lỗi `Foreign key constraint violated: Tenant_roomId_fkey` khi cố gắng xóa phòng trọ trên hệ thống.
+  - Sửa đổi hàm `deleteRoom` trong [roomController.js](file:///c:/Users/Duyen/Documents/GitHub/houserenting-app/backend/src/controllers/roomController.js) (dòng 77-100) sắp xếp lại thứ tự thực hiện các câu lệnh xóa trong `prisma.$transaction` đồng bộ: Hóa đơn (`Invoice`) -> Tài liệu khách thuê (`TenantFile`) -> Thông tin khách thuê (`Tenant`) -> Phòng trọ (`Room`).
+  - Đảm bảo an toàn 100% khi xóa phòng có các thông tin khách thuê lịch sử (`active = false`) hay hóa đơn đã xuất mà không gây lỗi khóa ngoại.
+
+### Verified
+- ✅ Chạy kiểm thử đơn vị backend: `npm run test` vượt qua thành công, đảm bảo các hàm VietQR hoạt động bình thường.
+- ✅ Sắp xếp thứ tự xóa đảm bảo logic dữ liệu chạy hoàn hảo trong các transaction cơ sở dữ liệu.
+
+---
+
 ## [1.4.0] - 2026-05-31
 
 ### Added
