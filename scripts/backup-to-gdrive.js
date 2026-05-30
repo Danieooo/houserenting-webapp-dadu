@@ -1,6 +1,5 @@
 const { Client } = require('pg');
 const { google } = require('googleapis');
-const fs = require('fs');
 
 async function runBackup() {
   console.log('[GDrive Backup] Starting self-contained backup process...');
@@ -72,12 +71,21 @@ async function runBackup() {
 
   // Now, upload to Google Drive
   try {
-    const auth = new google.auth.JWT(
-      credentials.client_email,
-      null,
-      credentials.private_key,
-      ['https://www.googleapis.com/auth/drive.file']
-    );
+    console.log('[GDrive Backup] Authenticating with Google Drive API...');
+    
+    // Clean and fix private key newlines in case it was escaped in GitHub Secrets
+    const privateKey = credentials.private_key.replace(/\\n/g, '\n');
+
+    const auth = new google.auth.GoogleAuth({
+      credentials: {
+        client_email: credentials.client_email,
+        private_key: privateKey,
+      },
+      scopes: [
+        'https://www.googleapis.com/auth/drive.file',
+        'https://www.googleapis.com/auth/drive'
+      ],
+    });
 
     const drive = google.drive({ version: 'v3', auth });
 
