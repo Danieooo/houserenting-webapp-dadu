@@ -114,3 +114,25 @@ Hệ thống được thiết kế với triết lý **Product-Grade** (Chất l
 4. **Xử lý Backend Free-tier ngủ đông (Cold Start)**: Vì backend triển khai trên Render Free Tier sẽ tự động ngủ sau 15 phút không hoạt động, hệ thống PHẢI có:
    - Hệ thống keep-alive ping tự động từ dịch vụ bên thứ ba (như cron-job.org) gọi `/api/health` mỗi 14 phút để giữ server luôn thức.
    - Giao diện Frontend PHẢI có **WakeUpBanner** hiển thị thông báo thân thiện và hiển thị thanh trạng thái chờ đợi NẾU request đầu tiên bị trễ quá 10 giây (timeout được cấu hình lên đến 60 giây cho request đầu tiên), tránh để màn hình bị đơ hoặc báo lỗi trắng.
+
+---
+
+### Requirement 7: Sao lưu Tự động & Nhắc nhở Đóng tiền (Auto Backup & Smart Notifications)
+**User Story:** Là một chủ nhà trọ, tôi muốn dữ liệu của tôi được sao lưu an toàn mỗi ngày và tôi muốn có cách nhanh chóng để gửi tin nhắn thông báo tiền phòng cho khách thuê qua Zalo hoặc SMS mà không phải tự nhập liệu thủ công.
+
+#### Tiêu chí nghiệm thu (Acceptance Criteria)
+1. **Hệ thống Sao lưu tự động lên Google Drive**:
+   - Hệ thống PHẢI thiết lập kịch bản **GitHub Actions** tự động chạy vào lúc 2:00 AM giờ Việt Nam (`19:00 UTC`) hàng ngày.
+   - Kịch bản PHẢI sử dụng `pg_dump` để xuất bản sao lưu đầy đủ cơ sở dữ liệu Neon PostgreSQL và tự động tải lên thư mục Google Drive của chủ trọ thông qua Google API Service Account.
+2. **Giao diện Gửi thông báo nhắc nợ hóa đơn**:
+   - Trong trang chi tiết hóa đơn, hệ thống PHẢI cung cấp nút **"Gửi thông báo"**.
+   - Khi nhấn nút, hệ thống PHẢI hiển thị hộp thoại xem trước (Modal Preview) nội dung tin nhắn được biên soạn tự động rất trực quan chứa đầy đủ thông tin: tên nhà trọ, số phòng, khách thuê, chỉ số điện/nước cũ và mới, tổng số tiền, hướng dẫn thanh toán và đường dẫn link xem hóa đơn trực tuyến.
+3. **Tính năng chia sẻ đa kênh tiện lợi**:
+   - Hộp thoại PHẢI cung cấp 4 tùy chọn chia sẻ:
+     - **Copy tin nhắn**: Sao chép nội dung đã được định dạng.
+     - **Gửi qua Zalo**: Tự động sao chép tin nhắn vào clipboard và mở khung chat Zalo tương ứng với số điện thoại của khách thuê.
+     - **Gửi SMS**: Mở ứng dụng gửi tin nhắn SMS mặc định trên điện thoại với tin soạn sẵn đầy đủ (loại bỏ các dấu sao markdown để tương thích tối đa).
+     - **Chia sẻ nhanh**: Sử dụng Web Share API của hệ điều hành để chia sẻ trực tiếp sang Messenger, Viber, Gmail,... trên thiết bị di động.
+4. **Tích hợp Webhook đẩy dữ liệu tự động**:
+   - Chủ trọ CÓ THỂ cấu hình một đường dẫn `Webhook URL` trong Cài đặt.
+   - Khi bấm nút **"Đẩy Webhook"**, backend PHẢI đẩy gói tin dữ liệu JSON hóa đơn đầy đủ cùng thông tin định dạng Discord-compatible sang webhook để chủ trọ tích hợp vào các kênh chat Discord/Telegram hoặc các hệ thống tự động hóa Make/n8n.

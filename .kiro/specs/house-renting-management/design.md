@@ -128,17 +128,16 @@ model RefreshToken {
 }
 
 model Settings {
-  id        Int      @id @default(autoincrement())
-  userId    Int      @unique
-  user      User     @relation(fields: [userId], references: [id])
-  shopName  String   @default("Nhà trọ")
-  address   String   @default("")
-  phone     String   @default("")
-  logoUrl   String?
-  bankName  String   @default("")
-  bankAcc   String   @default("")
-  bankOwner String   @default("")
-  updatedAt DateTime @updatedAt
+  id          Int      @id @default(autoincrement())
+  userId      Int      @unique
+  user        User     @relation(fields: [userId], references: [id])
+  shopName    String   @default("Nhà trọ")
+  address     String   @default("")
+  phone       String   @default("")
+  logoUrl     String?
+  paymentInfo String?  // Optional payment/QR payload for invoice PDF
+  webhookUrl  String?  @default("")
+  updatedAt   DateTime @updatedAt
 }
 
 enum RoomStatus {
@@ -324,5 +323,46 @@ Các mã lỗi nghiệp vụ quy định:
   - Khi API trả về lỗi (như trùng hóa đơn, số điện mới nhỏ hơn số điện cũ), hệ thống hiển thị thông báo lỗi chi tiết bằng tiếng Việt trên Toast để chủ trọ biết rõ nguyên nhân và cách khắc phục thay vì hiện mã lỗi kỹ thuật khó hiểu.
 
 ### 2. Chiến lược Xác thực và Đánh giá (Validation Process)
-- Thực hiện kiểm duyệt responsive trên đa thiết bị (Desktop, Tablet, Mobile) đảm bảo không có hiện tượng vỡ khung hay xuất hiện thanh cuộn ngang khó chịu.
+- Chi tiết kiểm duyệt responsive trên đa thiết bị (Desktop, Tablet, Mobile) đảm bảo không có hiện tượng vỡ khung hay xuất hiện thanh cuộn ngang khó chịu.
 - Tiến hành audit heuristic cho toàn bộ các màn hình chính (Dashboard, Phòng trọ, Khách thuê, Hóa đơn, Cài đặt) và tối ưu hóa các điểm vi phạm heuristic cấp độ nhẹ đến nặng trước khi bàn giao.
+
+---
+
+## Auto Backup & Smart Notification Design
+
+### 1. Hệ thống Sao lưu Cơ sở dữ liệu (Auto Backup Workflow)
+
+Kiến trúc sao lưu được tách biệt hoàn toàn khỏi máy chủ ứng dụng để bảo vệ hiệu năng và đảm bảo độ kiên cố cao nhất:
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant GH as GitHub Actions runner (Ubuntu)
+    participant Neon as Neon PostgreSQL Database
+    participant GD as Google Drive API
+    
+    GH->>GH: Kích hoạt lúc 2:00 AM ICT (định kỳ)
+    GH->>GH: Cài đặt postgresql-client & googleapis
+    GH->>Neon: Chạy pg_dump bằng DATABASE_URL bí mật
+    Neon-->>GH: Trả về file SQL kết quả dump (backup.sql)
+    GH->>GD: Xác thực JWT qua GOOGLE_SERVICE_ACCOUNT_KEY
+    GH->>GD: Gửi file backup.sql đến GOOGLE_DRIVE_FOLDER_ID
+    GD-->>GH: Xác nhận tải lên thành công (ID file mới)
+```
+
+- **Lợi ích**:
+  - Không gây tốn RAM/CPU trên Render Backend Free-tier.
+  - File backup ở dạng SQL thô dễ dàng khôi phục trên bất cứ hệ thống PostgreSQL nào.
+  - Sử dụng cơ chế key JSON bảo mật tuyệt đối của Google Service Account.
+
+### 2. Bộ truyền thông nhắc nợ Hóa đơn (Smart Notifications)
+
+Hệ thống thông báo áp dụng phương pháp tiếp cận hai tầng:
+
+- **Tầng 1: Click-to-Send Client-side (Miễn phí & Không cần thiết lập)**:
+  - Tích hợp Web Share API trực tiếp trên trình duyệt thiết bị di động để mở Native Share Sheet.
+  - Sử dụng Zalo URL scheme (`https://zalo.me/${phone}`) kết hợp clipboard sao chép tự động giúp chuyển giao tin nhắn cực nhanh.
+  - Sử dụng SMS URL scheme (`sms:${phone}?body=${text}`) mở ứng dụng nhắn tin mặc định.
+- **Tầng 2: Webhook Đẩy tự động (Automated Backend Webhook)**:
+  - API backend `/api/invoices/:id/notify` nhận yêu cầu, lấy thông tin cấu hình `webhookUrl` trong bảng `Settings` và tự động gửi gói tin POST JSON.
+  - Tương thích định dạng thông điệp Discord Embed và cấu trúc JSON chuẩn hóa dành cho các cổng tự động hóa Make/n8n.

@@ -2,9 +2,9 @@ import { useParams, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { getInvoiceApi, updateInvoiceApi, markInvoicePaidApi, getInvoicePdfApi } from '../services/api';
+import { getInvoiceApi, updateInvoiceApi, markInvoicePaidApi, getInvoicePdfApi, getSettingsApi, notifyInvoiceApi } from '../services/api';
 import { formatCurrency, formatDate } from '../lib/utils';
-import { ArrowLeft, Download, CheckCircle2, Edit2, Save, X } from 'lucide-react';
+import { ArrowLeft, Download, CheckCircle2, Edit2, Save, X, Send, MessageSquare, Share2, Copy, Check, Bell } from 'lucide-react';
 import { SkeletonDetail } from '../components/Skeleton';
 
 export default function InvoiceDetailPage() {
@@ -12,6 +12,20 @@ export default function InvoiceDetailPage() {
   const qc = useQueryClient();
   const [editing, setEditing] = useState(false);
   const [form, setForm] = useState({});
+  const [showNotifyModal, setShowNotifyModal] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  const { data: settingsData } = useQuery({
+    queryKey: ['settings'],
+    queryFn: getSettingsApi,
+  });
+  const settings = settingsData?.data?.data;
+
+  const { mutate: triggerWebhook, isPending: notifying } = useMutation({
+    mutationFn: () => notifyInvoiceApi(id),
+    onSuccess: () => toast.success('Đã gửi thông báo qua Webhook!'),
+    onError: (e) => toast.error(e.response?.data?.message || 'Lỗi gửi webhook'),
+  });
 
   const { data, isLoading } = useQuery({
     queryKey: ['invoice', id],
@@ -23,6 +37,75 @@ export default function InvoiceDetailPage() {
   });
 
   const invoice = data?.data?.data;
+
+  const buildMessageText = () => {
+    if (!invoice) return '';
+    const elecUsed = invoice.electricityNow - invoice.electricityPrev;
+    const waterUsed = invoice.waterNow - invoice.waterPrev;
+    const shopName = settings?.shopName || 'Nhà trọ';
+    const paymentInfo = settings?.paymentInfo || 'Thông tin ngân hàng cấu hình trong Cài đặt';
+    const invoiceUrl = `${window.location.origin}/invoices/${invoice.id}`;
+
+    return `🔔 *THÔNG BÁO TIỀN PHÒNG - ${invoice.room?.name?.toUpperCase()}* 🔔
+
+Kính gửi anh/chị *${invoice.tenant?.name}*,
+Nhà trọ *${shopName}* xin thông báo tiền phòng tháng ${invoice.month}/${invoice.year} như sau:
+
+- *Tiền phòng cơ bản:* ${formatCurrency(invoice.baseRent)}
+- *Tiền điện:* ${elecUsed} kWh (${invoice.electricityPrev} → ${invoice.electricityNow}) × ${formatCurrency(invoice.electricityPrice)} = ${formatCurrency(elecUsed * invoice.electricityPrice)}
+- *Tiền nước:* ${waterUsed} m³ (${invoice.waterPrev} → ${invoice.waterNow}) × ${formatCurrency(invoice.waterPrice)} = ${formatCurrency(waterUsed * invoice.waterPrice)}
+- *Phí vệ sinh/rác:* ${formatCurrency(invoice.garbageFee)}
+${invoice.otherFees > 0 ? `- *Phí khác (${invoice.otherNote || 'Không có'}):* ${formatCurrency(invoice.otherFees)}\n` : ''}----------------------------------
+💰 *TỔNG CỘNG:* *${formatCurrency(invoice.totalAmount)}*
+
+*Quý khách vui lòng thanh toán bằng cách quét mã QR trên hóa đơn hoặc chuyển khoản theo thông tin:*
+🏦 ${paymentInfo}
+
+👉 *Xem hóa đơn chi tiết tại:* ${invoiceUrl}`;
+  };
+
+  const handleCopyText = async () => {
+    try {
+      await navigator.clipboard.writeText(buildMessageText());
+      setCopied(true);
+      toast.success('Đã sao chép nội dung tin nhắn!');
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      toast.error('Lỗi sao chép');
+    }
+  };
+
+  const handleSendZalo = async () => {
+    await navigator.clipboard.writeText(buildMessageText());
+    toast.success('Đã sao chép! Đang mở Zalo...');
+    window.open(`https://zalo.me/${invoice?.tenant?.phone}`, '_blank');
+  };
+
+  const handleSendSMS = () => {
+    const text = buildMessageText().replace(/\*/g, '');
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    const smsUrl = `sms:${invoice?.tenant?.phone}${isIOS ? '&' : '?'}body=${encodeURIComponent(text)}`;
+    window.open(smsUrl, '_blank');
+  };
+
+  const handleWebShare = async () => {
+    const text = buildMessageText();
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: `Hóa đơn phòng ${invoice?.room?.name}`,
+          text: text,
+        });
+        toast.success('Đã chia sẻ thành công!');
+      } catch (err) {
+        if (err.name !== 'AbortError') {
+          toast.error('Lỗi chia sẻ');
+        }
+      }
+    } else {
+      handleCopyText();
+    }
+  };
 
   const { mutate: updateInv, isPending: updating } = useMutation({
     mutationFn: (d) => updateInvoiceApi(id, d),
@@ -72,6 +155,9 @@ export default function InvoiceDetailPage() {
           <div className="flex gap-2">
             <button onClick={downloadPdf} data-testid="invoice-download-pdf-btn" className="flex items-center gap-1.5 px-3 py-2 border rounded-lg text-xs font-medium hover:bg-gray-50">
               <Download size={13} /> PDF
+            </button>
+            <button onClick={() => setShowNotifyModal(true)} data-testid="invoice-notify-btn" className="flex items-center gap-1.5 px-3 py-2 border rounded-lg text-xs font-medium bg-primary/5 text-primary hover:bg-primary/10 border-primary/20 transition-all duration-200">
+              <Bell size={13} /> Gửi thông báo
             </button>
             {!invoice.paid && (
               <>
@@ -138,6 +224,68 @@ export default function InvoiceDetailPage() {
           </div>
         )}
       </div>
+
+      {showNotifyModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl border shadow-2xl max-w-lg w-full overflow-hidden transform transition-all duration-300 animate-in fade-in zoom-in-95">
+            {/* Header */}
+            <div className="px-6 py-4 border-b flex justify-between items-center bg-gray-50/50">
+              <h3 className="font-bold text-gray-900 flex items-center gap-2">
+                <Bell size={18} className="text-primary" />
+                Gửi thông báo hóa đơn
+              </h3>
+              <button onClick={() => setShowNotifyModal(false)} data-testid="close-notify-modal-btn" className="text-gray-400 hover:text-gray-600 transition-colors p-1 hover:bg-gray-100 rounded-full">
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* Body */}
+            <div className="p-6 space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Xem trước nội dung thông báo</label>
+                <pre className="w-full bg-slate-950 text-slate-100 text-xs p-4 rounded-xl font-mono overflow-y-auto max-h-64 whitespace-pre-wrap leading-relaxed border border-slate-800 shadow-inner">
+                  {buildMessageText()}
+                </pre>
+              </div>
+
+              <div className="bg-amber-50 border border-amber-200/60 rounded-xl p-3 text-xs text-amber-800 flex gap-2">
+                <span className="font-bold">Lưu ý Zalo:</span>
+                <span>Sau khi bạn bấm "Gửi qua Zalo", hệ thống sẽ copy nội dung tin nhắn và mở khung chat với số điện thoại khách thuê. Bạn chỉ cần nhấn <strong>Ctrl+V</strong> và bấm gửi.</span>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="px-6 py-4 border-t bg-gray-50/50 flex flex-wrap gap-2 justify-end">
+              <button onClick={handleCopyText} className="flex items-center gap-1.5 px-4 py-2 border rounded-xl text-xs font-semibold bg-white hover:bg-gray-50 text-gray-700 transition-all duration-200">
+                {copied ? <Check size={13} className="text-green-600" /> : <Copy size={13} />}
+                {copied ? 'Đã copy!' : 'Copy tin nhắn'}
+              </button>
+
+              <button onClick={handleSendSMS} className="flex items-center gap-1.5 px-4 py-2 border rounded-xl text-xs font-semibold bg-white hover:bg-gray-50 text-gray-700 transition-all duration-200">
+                <MessageSquare size={13} className="text-blue-500" />
+                Gửi SMS
+              </button>
+
+              <button onClick={handleSendZalo} className="flex items-center gap-1.5 px-4 py-2 border border-blue-200 rounded-xl text-xs font-semibold bg-blue-50 hover:bg-blue-100 text-blue-700 transition-all duration-200">
+                <Send size={13} />
+                Gửi qua Zalo
+              </button>
+
+              <button onClick={handleWebShare} className="flex items-center gap-1.5 px-4 py-2 border border-teal-200 rounded-xl text-xs font-semibold bg-teal-50 hover:bg-teal-100 text-teal-700 transition-all duration-200">
+                <Share2 size={13} />
+                Chia sẻ nhanh
+              </button>
+
+              {settings?.webhookUrl && (
+                <button onClick={() => triggerWebhook()} disabled={notifying} className="flex items-center gap-1.5 px-4 py-2 bg-primary text-primary-foreground rounded-xl text-xs font-semibold hover:bg-primary/95 disabled:opacity-60 shadow-md active:scale-95 transition-all duration-200">
+                  <Bell size={13} />
+                  {notifying ? 'Đang gửi Webhook...' : 'Đẩy Webhook'}
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

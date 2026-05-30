@@ -3,7 +3,7 @@ const router = express.Router();
 const protect = require('../middlewares/authMiddleware');
 const {
   getInvoices, getInvoice, createInvoice, bulkCreateInvoices,
-  updateInvoice, deleteInvoice, markPaid,
+  updateInvoice, deleteInvoice, markPaid, notifyInvoice,
 } = require('../controllers/invoiceController');
 const { getInvoicePdf } = require('../controllers/pdfController');
 
@@ -15,6 +15,7 @@ router.get('/:id', getInvoice);
 router.put('/:id', updateInvoice);
 router.delete('/:id', deleteInvoice);
 router.put('/:id/pay', markPaid);
+router.post('/:id/notify', notifyInvoice);
 router.get('/:id/pdf', getInvoicePdf);
 
 module.exports = router;

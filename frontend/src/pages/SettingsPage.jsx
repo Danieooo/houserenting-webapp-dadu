@@ -18,6 +18,7 @@ export default function SettingsPage() {
       address: settings.address,
       phone: settings.phone,
       paymentInfo: settings.paymentInfo || '',
+      webhookUrl: settings.webhookUrl || '',
     });
   }
 
@@ -82,6 +83,19 @@ export default function SettingsPage() {
               className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 outline-none"
             />
             <p className="text-xs text-muted-foreground mt-2">Nội dung này sẽ được in trên hóa đơn và mã QR sẽ được tạo tự động nếu có.</p>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-1">Webhook URL (Thông báo hóa đơn)</label>
+            <input
+              type="text"
+              value={form?.webhookUrl || ''}
+              onChange={(e) => setForm({ ...form, webhookUrl: e.target.value })}
+              placeholder="https://discord.com/api/webhooks/... hoặc endpoint tự động hóa"
+              data-testid="settings-webhookUrl"
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 outline-none"
+            />
+            <p className="text-xs text-muted-foreground mt-2">Đường dẫn nhận dữ liệu hóa đơn tự động sang các kênh Discord/n8n/Make khi nhấn nút gửi thông báo.</p>
           </div>
           <button onClick={() => mutate(form)} disabled={isPending} data-testid="settings-save-btn"
             className="flex items-center gap-2 px-5 py-2.5 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 disabled:opacity-60 shadow-sm active:scale-[0.98] transition-all duration-200">

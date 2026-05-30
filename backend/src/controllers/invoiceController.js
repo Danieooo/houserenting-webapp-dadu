@@ -264,3 +264,17 @@ exports.markPaid = async (req, res, next) => {
     res.json({ success: true, data: updated });
   } catch (err) { next(err); }
 };
+
+exports.notifyInvoice = async (req, res, next) => {
+  try {
+    const invoiceId = Number(req.params.id);
+    const invoice = await prisma.invoice.findFirst({ where: { id: invoiceId, userId: req.user.id } });
+    if (!invoice) return res.status(404).json({ success: false, message: 'Hóa đơn không tồn tại', code: 'NOT_FOUND' });
+
+    const { sendInvoiceWebhook } = require('../services/notificationService');
+    const origin = req.headers.origin || 'http://localhost:5173';
+
+    const result = await sendInvoiceWebhook(invoiceId, origin);
+    res.json({ success: true, message: result.message });
+  } catch (err) { next(err); }
+};

@@ -37,6 +37,7 @@ model Settings {
   phone       String   @default("")
   logoUrl     String?
   paymentInfo String?  // Optional payment/QR payload for invoice PDF
+  webhookUrl  String?  @default("")
   updatedAt   DateTime @updatedAt
 }
 

@@ -83,6 +83,7 @@ export const updateInvoiceApi = (id, data) => API.put(`/invoices/${id}`, data);
 export const deleteInvoiceApi = (id) => API.delete(`/invoices/${id}`);
 export const markInvoicePaidApi = (id, data) => API.put(`/invoices/${id}/pay`, data);
 export const getInvoicePdfApi = (id) => API.get(`/invoices/${id}/pdf`, { responseType: 'blob' });
+export const notifyInvoiceApi = (id) => API.post(`/invoices/${id}/notify`);
 
 // Dashboard
 export const getDashboardSummaryApi = () => API.get('/dashboard/summary');

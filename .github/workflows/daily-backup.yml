@@ -1,0 +1,47 @@
+name: Daily Database Backup to Google Drive
+
+on:
+  schedule:
+    - cron: '0 19 * * *'  # 19:00 UTC is 02:00 AM ICT (Vietnam time)
+  workflow_dispatch:      # Allow manual trigger from GitHub Actions tab
+
+jobs:
+  backup:
+    name: Database Dump & Upload
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository code
+        uses: actions/checkout@v4
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install googleapis package (no-save)
+        run: |
+          npm install --no-save googleapis
+
+      - name: Install postgresql-client
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client
+
+      - name: Dump database from Neon PostgreSQL
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          if [ -z "$DATABASE_URL" ]; then
+            echo "DATABASE_URL secret is not set!"
+            exit 1
+          fi
+          # Extract pg_dump connection and dump schema + data
+          pg_dump "$DATABASE_URL" -F p -b -v -f backup.sql
+
+      - name: Upload dump to Google Drive
+        env:
+          GOOGLE_SERVICE_ACCOUNT_KEY: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}
+          GOOGLE_DRIVE_FOLDER_ID: ${{ secrets.GOOGLE_DRIVE_FOLDER_ID }}
+        run: |
+          node scripts/backup-to-gdrive.js

@@ -5,6 +5,32 @@ All notable changes to the **House Renting App** project will be documented in t
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.0] - 2026-05-31
+
+### Added
+- **Hệ thống Sao lưu Tự động lên Google Drive (Auto Backup)**:
+  - Thiết lập kịch bản GitHub Actions [.github/workflows/daily-backup.yml](file:///c:/Users/Duyen/Documents/GitHub/houserenting-app/.github/workflows/daily-backup.yml) tự động chạy vào lúc 2:00 AM giờ Việt Nam (19:00 UTC) hàng ngày.
+  - Viết script [backup-to-gdrive.js](file:///c:/Users/Duyen/Documents/GitHub/houserenting-app/scripts/backup-to-gdrive.js) độc lập sử dụng Google API JWT client để tải bản sao lưu PostgreSQL lên thư mục Google Drive của chủ trọ thông qua Google Service Account.
+- **Bộ truyền thông Nhắc nợ Hóa đơn Thông minh (Smart Notifications)**:
+  - Thiết kế và tích hợp popup xem trước tin nhắn hóa đơn và chia sẻ đa kênh đẹp mắt tại chi tiết hóa đơn.
+  - Hỗ trợ **Gửi Zalo** (tự sao chép tin soạn sẵn vào clipboard và mở khung chat Zalo tương ứng số điện thoại khách thuê).
+  - Hỗ trợ **Gửi SMS** (tự động điền body plaintext tương thích tối đa và mở ứng dụng tin nhắn Native).
+  - Hỗ trợ **Chia sẻ nhanh** (Web Share API hiện đại trên thiết bị di động).
+  - Hỗ trợ **Đẩy Webhook** (đẩy JSON thông tin chi tiết hóa đơn kèm tin nhắn Discord Embed lên webhook của bên thứ ba).
+- **Trường cơ sở dữ liệu Webhook URL**:
+  - Bổ sung trường `webhookUrl` vào bảng `Settings` trong [schema.prisma](file:///c:/Users/Duyen/Documents/GitHub/houserenting-app/backend/prisma/schema.prisma) để cho phép tùy biến endpoint nhận thông tin đẩy tự động.
+
+### Changed
+- **Giao diện Cài đặt (SettingsPage)**:
+  - Thêm ô nhập trường `Webhook URL` trong tab cài đặt thông tin nhà trọ cho phép cấu hình endpoint bên thứ ba (Discord/n8n/Make).
+- **Tái cấu trúc API & Route Backend**:
+  - Bổ sung route `POST /api/invoices/:id/notify` gọi đến dịch vụ gửi webhook.
+  - Viết module backend [notificationService.js](file:///c:/Users/Duyen/Documents/GitHub/houserenting-app/backend/src/services/notificationService.js) để đóng gói thông điệp và truyền tải JSON dữ liệu an toàn.
+
+### Verified
+- ✅ Playwright E2E `notification-flow.spec.js`: Đăng nhập -> Cài đặt Webhook URL -> Xem chi tiết hóa đơn -> Mở Popup gửi thông báo -> Đóng Popup thành công — `1 passed` trong 11.8 giây.
+- ✅ Backend Unit Tests: `npm run test` vẫn hoạt động tốt, ALL PASSED.
+
 ---
 
 ## [1.3.1] - 2026-05-30

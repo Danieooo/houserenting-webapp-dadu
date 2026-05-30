@@ -64,7 +64,8 @@ Dự án hiện tại được quản lý nghiêm ngặt bởi bộ tài liệu 
 
 ## 5. System Status & Milestone Progress (Trạng thái hệ thống & Tiến độ)
 
-Hiện tại hệ thống đã hoàn thành xuất sắc đợt cải tiến mới nhất (Phiên bản `1.3.1`):
+Hiện tại hệ thống đã hoàn thành xuất sắc đợt cải tiến mới nhất (Phiên bản `1.4.0`):
+*   **Task 15: Auto Backup & Smart Notifications**: Tích hợp kịch bản GitHub Actions tự động dump database Neon PostgreSQL và upload lên Google Drive hàng ngày lúc 2:00 AM ICT sử dụng Google API Service Account. Xây dựng popup truyền thông chia sẻ tin nhắn hóa đơn đa kênh đẹp mắt tại frontend cho phép Gửi Zalo (tự sao chép tin nhắn và mở chat), Gửi SMS (Native body), Chia sẻ nhanh (Web Share API) và Đẩy Webhook JSON (Discord embed compatible) sang các cổng tự động hóa. Đã xác thực E2E Playwright `notification-flow.spec.js` thành công rực rỡ (`1 passed` trong 11.8 giây).
 *   **Task 11: Heuristic UI/UX Polish**: Đã bổ sung các màn hình chờ Skeleton co giãn mượt mà cho toàn bộ danh sách phòng, danh sách hóa đơn, khách thuê, chi tiết phòng và cài đặt. Cải tiến hiển thị lỗi chi tiết tiếng Việt và tự động đóng banner khi API thức giấc thành công.
 *   **Task 12: Responsive Polish**: Sửa triệt để các lỗi tràn viền chiều ngang (`overflow-x`) trên di động cho bảng hóa đơn và dashboard. Tối ưu hóa Recharts ResponsiveContainer co giãn mượt mà trên Mobile (375px), Tablet (768px).
 *   **Task 13: UI Automation Testing**: Tích hợp Playwright E2E. Cài đặt các thẻ `data-testid` định danh kiểm thử chuẩn xác trên tất cả các trang. Thiết lập kịch bản `happy-path.spec.js` chạy 100% bằng định tuyến client-side router, bảo toàn Zustand state (accessToken), loại bỏ hoàn toàn hiện tượng Silent Refresh race condition. Chạy test Playwright E2E thành công rực rỡ (`1 passed` trong 34 giây).

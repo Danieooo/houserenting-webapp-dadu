@@ -12,7 +12,7 @@ exports.getSettings = async (req, res, next) => {
 
 exports.updateSettings = async (req, res, next) => {
   try {
-    const { shopName, address, phone, logoUrl, paymentInfo } = req.body;
+    const { shopName, address, phone, logoUrl, paymentInfo, webhookUrl } = req.body;
     const settings = await prisma.settings.upsert({
       where: { userId: req.user.id },
       update: {
@@ -21,8 +21,9 @@ exports.updateSettings = async (req, res, next) => {
         ...(phone !== undefined && { phone }),
         ...(logoUrl !== undefined && { logoUrl }),
         ...(paymentInfo !== undefined && { paymentInfo }),
+        ...(webhookUrl !== undefined && { webhookUrl }),
       },
-      create: { userId: req.user.id, shopName, address, phone, logoUrl, paymentInfo },
+      create: { userId: req.user.id, shopName, address, phone, logoUrl, paymentInfo, webhookUrl },
     });
     res.json({ success: true, data: settings });
   } catch (err) { next(err); }
