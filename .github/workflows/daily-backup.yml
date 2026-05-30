@@ -33,12 +33,14 @@ jobs:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: |
           if [ -z "$DATABASE_URL" ]; then
-            echo "DATABASE_URL secret is not set!"
+            echo "❌ Error: DATABASE_URL secret is not set in GitHub Secrets!"
             exit 1
           fi
-          # Extract pg_dump connection and dump schema + data
-          pg_dump "$DATABASE_URL" -F p -b -v -f backup.sql
-
+          # Proactively strip any double quotes in case user copied literally from .env
+          CLEAN_URL=$(echo "$DATABASE_URL" | sed -e 's/^"//' -e 's/"$//')
+          echo "Starting pg_dump..."
+          pg_dump "$CLEAN_URL" -F p -b -v -f backup.sql
+          
       - name: Upload dump to Google Drive
         env:
           GOOGLE_SERVICE_ACCOUNT_KEY: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}
