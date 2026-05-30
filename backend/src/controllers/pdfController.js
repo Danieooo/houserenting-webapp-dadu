@@ -329,27 +329,40 @@ exports.getInvoicePdf = async (req, res, next) => {
     // === QR Code Section: Ưu tiên ảnh QR tĩnh, fallback sang VietQR động ===
     const staticQrPath = path.join(__dirname, '..', '..', 'assets', 'qr_code.png');
     const hasStaticQr = fs.existsSync(staticQrPath);
+    console.log('[PDF QR] Static QR path:', staticQrPath, '| Exists:', hasStaticQr);
 
+    let qrEmbedded = false;
+
+    // --- Tầng 1: Chế độ QR tĩnh (ưu tiên) ---
     if (hasStaticQr) {
-      // --- Chế độ QR tĩnh: nhúng trực tiếp ảnh thẻ Techcombank ---
-      const staticQrBytes = fs.readFileSync(staticQrPath);
-      const qrImage = await pdfDoc.embedPng(staticQrBytes);
-      const qrWidth = 110;
-      const qrHeight = 215;
+      try {
+        const staticQrBytes = fs.readFileSync(staticQrPath);
+        console.log('[PDF QR] Static QR loaded, size:', staticQrBytes.length, 'bytes');
+        const qrImage = await pdfDoc.embedPng(staticQrBytes);
+        const qrWidth = 110;
+        const qrHeight = 215;
 
-      // Căn giữa dòng chữ hướng dẫn quét mã
-      const title1 = 'Quét mã QR để thanh toán';
-      const title1W = font.widthOfTextAtSize(title1, 10);
-      drawText(page, title1, { x: (width - title1W) / 2, y, size: 10, font, color: rgb(0.1, 0.1, 0.1) });
+        // Căn giữa dòng chữ hướng dẫn quét mã
+        const title1 = 'Quét mã QR để thanh toán';
+        const title1W = font.widthOfTextAtSize(title1, 10);
+        drawText(page, title1, { x: (width - title1W) / 2, y, size: 10, font, color: rgb(0.1, 0.1, 0.1) });
 
-      // Căn giữa hình ảnh mã QR (giữ tỷ lệ khung hình đứng dọc)
-      const qrX = (width - qrWidth) / 2;
-      const qrY = y - qrHeight - 12;
-      page.drawImage(qrImage, { x: qrX, y: qrY, width: qrWidth, height: qrHeight });
+        // Căn giữa hình ảnh mã QR (giữ tỷ lệ khung hình đứng dọc)
+        const qrX = (width - qrWidth) / 2;
+        const qrY = y - qrHeight - 12;
+        page.drawImage(qrImage, { x: qrX, y: qrY, width: qrWidth, height: qrHeight });
 
-    } else {
-      // --- Chế độ dự phòng: sinh mã QR động VietQR ---
+        qrEmbedded = true;
+        console.log('[PDF QR] ✅ Static QR embedded successfully');
+      } catch (staticErr) {
+        console.error('[PDF QR] ❌ Static QR embed failed, falling back to dynamic:', staticErr.message);
+      }
+    }
+
+    // --- Tầng 2: Chế độ dự phòng VietQR động ---
+    if (!qrEmbedded) {
       const qrPayload = settings.paymentInfo?.trim();
+      console.log('[PDF QR] Dynamic fallback, paymentInfo:', qrPayload ? `"${qrPayload.substring(0, 30)}..."` : '(empty)');
       if (qrPayload) {
         let finalQrPayload = qrPayload;
         try {
@@ -364,7 +377,7 @@ exports.getInvoicePdf = async (req, res, next) => {
             }
           }
         } catch (err) {
-          console.error('Error generating VietQR payload:', err);
+          console.error('[PDF QR] Error generating VietQR payload:', err);
         }
 
         const qrBytes = await generateQrPngBytes(finalQrPayload);
