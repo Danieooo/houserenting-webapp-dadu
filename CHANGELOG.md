@@ -21,6 +21,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **Playwright E2E Resilience**: Thiết lập `test.setTimeout(90000)` kiên cố hóa chống lag mạng, bảo toàn 100% thuộc tính `data-testid` phục vụ Playwright.
   - **Vite Build Warnings**: Khắc phục triệt để warning Tailwind của Vite bằng cách đổi thuộc tính `duration-[2000ms]` động sang inline style.
   
+### Fixed
+- **Render Backend Deploy Webhook Status Code Check**: Sửa lỗi hành động trigger deploy backend lên Render trên GitHub Actions (`deploy-backend.yml`) báo lỗi thất bại mặc dù nhận được HTTP 200. Cho phép chấp nhận cả mã HTTP 200 và 201 làm mã phản hồi thành công của webhook API Render.
+
 ### Verified
 - ✅ Playwright E2E tests: Toàn bộ các bộ test E2E vượt qua hoàn hảo không có hiện tượng regression.
 - ✅ Production build: Biên dịch Vercel/Vite bundle frontend thành công 100% với 0 errors và 0 warnings.

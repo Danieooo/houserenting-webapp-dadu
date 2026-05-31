@@ -23,7 +23,7 @@ jobs:
           
           echo "Render API response code: $RESPONSE"
           
-          if [ "$RESPONSE" = "201" ]; then
+          if [ "$RESPONSE" = "200" ] || [ "$RESPONSE" = "201" ]; then
             echo "✅ Deploy triggered successfully on Render!"
           else
             echo "❌ Deploy trigger failed with HTTP $RESPONSE"
