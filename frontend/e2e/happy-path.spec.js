@@ -2,6 +2,7 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Happy Path Scenario', () => {
   test('should complete the entire cycle from room creation to checkout', async ({ page }) => {
+    test.setTimeout(90000);
     // 1. Setup dialog handler to automatically accept all confirms/alerts
     page.on('dialog', async dialog => {
       await dialog.accept();
@@ -106,7 +107,7 @@ test.describe('Happy Path Scenario', () => {
     await page.fill(`[data-testid="bulk-electricity-now-${roomId}"]`, '100');
     await page.fill(`[data-testid="bulk-water-now-${roomId}"]`, '10');
     await page.click('[data-testid="bulk-confirm-btn"]');
-    await expect(page.locator('[data-testid="bulk-confirm-btn"]')).toBeHidden();
+    await expect(page.locator('[data-testid="bulk-confirm-btn"]')).toBeHidden({ timeout: 20000 });
 
     // 16. Verify invoice row appears
     // Reload page to guarantee fresh invoices list from the backend

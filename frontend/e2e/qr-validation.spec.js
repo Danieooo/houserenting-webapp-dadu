@@ -2,6 +2,7 @@ import { test, expect } from '@playwright/test';
 
 test.describe('VietQR E2E Validation Scenario', () => {
   test('should update payment settings, show QR instruction texts on invoice, and download PDF successfully', async ({ page }) => {
+    test.setTimeout(90000);
     // 1. Setup dialog handler to automatically accept all confirms/alerts
     page.on('dialog', async dialog => {
       await dialog.accept();
@@ -99,9 +100,7 @@ test.describe('VietQR E2E Validation Scenario', () => {
     await page.fill(`[data-testid="bulk-electricity-now-${roomId}"]`, '100');
     await page.fill(`[data-testid="bulk-water-now-${roomId}"]`, '10');
     await page.click('[data-testid="bulk-confirm-btn"]');
-
-    // Wait for the modal to close and the invoices query to refetch and render
-    await page.waitForTimeout(2000);
+    await expect(page.locator('[data-testid="bulk-confirm-btn"]')).toBeHidden({ timeout: 20000 });
 
     // Verify invoice row appears
     const now = new Date();

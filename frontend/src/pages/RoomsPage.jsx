@@ -64,9 +64,9 @@ function RoomForm({ onClose, onSuccess, initialData }) {
 
   const Field = ({ label, name, placeholder, type = 'text', testId }) => (
     <div>
-      <label className="block text-sm font-medium mb-1">{label}</label>
+      <label className="block text-sm font-semibold text-slate-600 mb-1.5">{label}</label>
       <input type={type} placeholder={placeholder} {...register(name)} data-testid={testId}
-        className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 outline-none" />
+        className="w-full px-4 py-2.5 border border-slate-100 bg-slate-50/50 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-50 focus:border-[#2E7D32] transition-all duration-200 outline-none font-medium text-slate-700" />
       {errors[name] && <p className="text-red-500 text-xs mt-1">{errors[name].message}</p>}
     </div>
   );
@@ -88,8 +88,8 @@ function RoomForm({ onClose, onSuccess, initialData }) {
             <div className="col-span-2"><Field label="Phí rác (đ/tháng)" name="garbageFee" placeholder="20000" type="number" testId="room-form-garbageFee" /></div>
           </div>
           <div className="flex gap-3 pt-2">
-            <button type="button" onClick={onClose} className="flex-1 px-4 py-2 border rounded-lg text-sm hover:bg-gray-50">Hủy</button>
-            <button type="submit" disabled={isPending} data-testid="room-form-submit" className="flex-1 px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 disabled:opacity-60">
+            <button type="button" onClick={onClose} className="flex-1 px-4 py-2.5 border border-slate-100 rounded-xl text-sm font-bold text-slate-500 hover:bg-slate-50 active:scale-[0.98] transition-all">Hủy</button>
+            <button type="submit" disabled={isPending} data-testid="room-form-submit" className="flex-1 px-4 py-2.5 bg-[#2E7D32] hover:bg-[#2E7D32]/95 hover:shadow-[0_8px_20px_rgba(46,125,50,0.15)] text-white rounded-xl text-sm font-bold disabled:opacity-60 active:scale-[0.98] transition-all shadow-md">
               {isPending ? 'Đang lưu...' : (initialData ? 'Cập nhật' : 'Thêm phòng')}
             </button>
           </div>
@@ -136,7 +136,7 @@ export default function RoomsPage() {
           <h1 className="text-2xl font-bold text-slate-900">Phòng trọ</h1>
           <p className="text-sm text-slate-500 mt-1">{rooms.length} phòng hoạt động</p>
         </div>
-        <button onClick={() => setShowForm(true)} data-testid="add-room-btn" className="flex items-center gap-2 bg-cobalt-royal text-white px-5 py-2.5 rounded-xl text-sm font-semibold hover:-translate-y-0.5 active:scale-[0.98] transition-all duration-200 shadow-[0_4px_12px_rgba(0,82,204,0.15)]">
+        <button onClick={() => setShowForm(true)} data-testid="add-room-btn" className="flex items-center gap-2 bg-[#2E7D32] hover:bg-[#2E7D32]/95 text-white px-5 py-2.5 rounded-xl text-sm font-semibold hover:-translate-y-0.5 active:scale-[0.98] transition-all duration-200 shadow-[0_4px_12px_rgba(46,125,50,0.15)]">
           <Plus size={16} /> Thêm phòng
         </button>
       </div>
@@ -146,14 +146,20 @@ export default function RoomsPage() {
           {[...Array(6)].map((_, i) => <SkeletonCard key={i} />)}
         </div>
       ) : rooms.length === 0 ? (
-        <div className="text-center py-20 text-slate-400 bg-white rounded-2xl border border-slate-100 p-8">
-          <Building2 size={48} className="mx-auto mb-4 opacity-30 text-cobalt-royal" />
-          <p className="font-medium text-sm">Chưa có phòng nào. Hãy thêm phòng đầu tiên!</p>
+        <div className="text-center py-20 bg-white rounded-[24px] border border-emerald-100/20 p-8 shadow-[0_8px_30px_rgba(0,0,0,0.01)] flex flex-col items-center justify-center">
+          <div className="w-16 h-16 bg-[#E8F5E9] text-[#2E7D32] rounded-full flex items-center justify-center mb-4 border border-emerald-100/50 transform hover:rotate-12 transition-all duration-300">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-8 h-8 text-[#2E7D32]">
+              <path d="M12 2C6.5 2 2 6.5 2 12c0 2.8 1.1 5.3 3 7.1V22l3-2.2c1.2.6 2.5 1 4 1 5.5 0 10-4.5 10-10S17.5 2 12 2zm0 18c-4.4 0-8-3.6-8-8s3.6-8 8-8 8 3.6 8 8-3.6 8-8 8z" />
+              <path d="M12 6c-3.3 0-6 2.7-6 6h12c0-3.3-2.7-6-6-6z" />
+            </svg>
+          </div>
+          <p className="font-bold text-slate-800 text-base leading-tight">Chưa có phòng trọ nào 🌿</p>
+          <p className="text-xs text-slate-400 font-semibold mt-1.5 max-w-xs text-center leading-relaxed">Hãy bấm nút "Thêm phòng" ở góc trên để khởi tạo phòng trọ đầu tiên và thiết lập đơn giá vận hành.</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {rooms.map((room) => (
-            <div key={room.id} data-testid={`room-card-${room.name.replace(/\s+/g, '-')}`} className="bg-white rounded-2xl border border-slate-100 hover:border-blue-100 hover:-translate-y-1 hover:shadow-[0_12px_40px_rgba(0,0,0,0.03)] active:scale-[0.99] transition-all duration-300 ease-in-out p-6 flex flex-col justify-between">
+            <div key={room.id} data-testid={`room-card-${room.name.replace(/\s+/g, '-')}`} className="bg-white rounded-2xl border border-slate-100 hover:border-emerald-200/50 hover:-translate-y-1 hover:shadow-[0_12px_40px_rgba(46,125,50,0.03)] active:scale-[0.99] transition-all duration-300 ease-in-out p-6 flex flex-col justify-between">
               <div>
                 <div className="flex items-start justify-between mb-4">
                   <div>
@@ -166,7 +172,7 @@ export default function RoomsPage() {
                 </div>
                 <div className="mt-2">
                   <span className="text-xs text-slate-400 block">Giá thuê cơ bản</span>
-                  <p className="text-xl font-extrabold text-cobalt-royal mt-0.5">{formatCurrency(room.baseRent)}<span className="text-xs text-slate-400 font-normal">/tháng</span></p>
+                  <p className="text-xl font-extrabold text-[#2E7D32] mt-0.5">{formatCurrency(room.baseRent)}<span className="text-xs text-slate-400 font-normal">/tháng</span></p>
                 </div>
                 {room.tenants && room.tenants.length > 0 && (
                   <div className="mt-4 pt-3 border-t border-slate-100 flex items-center gap-2">

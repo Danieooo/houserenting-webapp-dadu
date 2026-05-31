@@ -2,6 +2,7 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Smart Notification E2E Scenario', () => {
   test('should configure Webhook URL and open notification share modal on invoice detail successfully', async ({ page }) => {
+    test.setTimeout(90000);
     // 1. Setup dialog handler to automatically accept all confirms/alerts
     page.on('dialog', async dialog => {
       await dialog.accept();

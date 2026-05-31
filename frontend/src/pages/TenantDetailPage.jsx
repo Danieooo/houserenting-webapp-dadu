@@ -75,24 +75,24 @@ export default function TenantDetailPage() {
           <Link to="/tenants" className="text-slate-400 hover:text-slate-600 active:scale-[0.98] transition-all duration-200"><ArrowLeft size={20} /></Link>
           <div>
             <h1 className="text-2xl font-bold text-slate-800">{tenant.name}</h1>
-            <p className="text-sm text-slate-500 mt-1">Phòng đang ở: <Link to={`/rooms/${tenant.room?.id}`} className="text-cobalt-royal hover:underline font-bold">{tenant.room?.name}</Link></p>
+            <p className="text-sm text-slate-500 mt-1">Phòng đang ở: <Link to={`/rooms/${tenant.room?.id}`} className="text-[#2E7D32] hover:underline font-bold">{tenant.room?.name}</Link></p>
           </div>
         </div>
       </div>
 
       {tenant.room && (
-        <div className="bg-blue-50/50 border border-blue-100 rounded-2xl p-6 shadow-[0_4px_12px_rgba(0,82,204,0.02)]">
+        <div className="bg-[#E8F5E9]/30 border border-emerald-100 rounded-2xl p-6 shadow-[0_4px_12px_rgba(46,125,50,0.02)]">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <p className="text-[10px] uppercase tracking-wider text-cobalt-royal font-bold mb-1">Trạng thái phòng</p>
+              <p className="text-[10px] uppercase tracking-wider text-[#2E7D32] font-bold mb-1">Trạng thái phòng</p>
               <p className="text-2xl font-black text-slate-800 leading-tight">Phòng {tenant.room.name}</p>
               <p className="text-xs text-slate-500 mt-2">Bắt đầu thuê: <span className="font-semibold">{formatDate(tenant.moveInDate)}</span></p>
-              <p className="text-xs text-slate-500">Trạng thái: <span className={`font-semibold ${tenant.active ? 'text-emerald-600' : 'text-slate-400'}`}>{tenant.active ? 'Đang thuê hoạt động' : 'Đã rời đi'}</span></p>
+              <p className="text-xs text-slate-500">Trạng thái: <span className={`font-semibold ${tenant.active ? 'text-[#2E7D32]' : 'text-slate-400'}`}>{tenant.active ? 'Đang thuê hoạt động' : 'Đã rời đi'}</span></p>
             </div>
             <div className="flex flex-wrap gap-2">
               {tenant.active && (
                 <button type="button" onClick={handleMoveOut} disabled={movingOut || deletingTenant}
-                  className="inline-flex items-center justify-center rounded-xl bg-orange-50 border border-orange-100 px-5 py-2.5 text-xs font-bold text-orange-600 hover:bg-orange-100/50 active:scale-[0.98] transition-all duration-200">
+                  className="inline-flex items-center justify-center rounded-xl bg-[#FFF3E0] border border-orange-200/50 px-5 py-2.5 text-xs font-bold text-[#E65100] hover:bg-[#FFE0B2] active:scale-[0.98] transition-all duration-300">
                   {movingOut ? 'Đang chuyển...' : 'Chuyển ra'}
                 </button>
               )}
@@ -134,11 +134,11 @@ export default function TenantDetailPage() {
             <input
               type="text" value={label} onChange={(e) => setLabel(e.target.value)}
               placeholder="Nhãn (VD: CCCD mặt trước)"
-              className="w-full px-3.5 py-2.5 border border-slate-100 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-300 outline-none transition-all"
+              className="w-full px-3.5 py-2.5 border border-slate-100 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-100 focus:border-[#2E7D32] outline-none transition-all"
             />
             <input ref={fileRef} type="file" accept="image/*,application/pdf" onChange={handleFileSelect} className="hidden" />
             <button onClick={() => fileRef.current.click()} disabled={uploading}
-              className="w-full flex flex-col items-center justify-center gap-2 border-2 border-dashed border-blue-200/60 rounded-xl py-5 text-xs text-slate-400 hover:border-blue-400 hover:text-cobalt-royal hover:bg-blue-50/10 active:scale-[0.99] transition-all duration-200 cursor-pointer">
+              className="w-full flex flex-col items-center justify-center gap-2 border-2 border-dashed border-emerald-200/60 rounded-xl py-5 text-xs text-slate-400 hover:border-emerald-400 hover:text-[#2E7D32] hover:bg-[#E8F5E9]/20 active:scale-[0.99] transition-all duration-300 cursor-pointer">
               <Upload size={20} className="text-slate-400 animate-bounce" />
               <span className="font-bold">{uploading ? 'Đang tải lên...' : 'Chọn file (ảnh hoặc PDF, tối đa 5MB)'}</span>
             </button>
@@ -149,8 +149,8 @@ export default function TenantDetailPage() {
           ) : (
             <div className="space-y-2">
               {tenant.files?.map((f) => (
-                <div key={f.id} className="flex items-center justify-between p-3.5 rounded-xl border border-slate-100 text-sm hover:border-blue-100 hover:bg-blue-50/5 transition-all">
-                  <a href={f.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-cobalt-royal font-bold hover:underline flex-1 min-w-0">
+                <div key={f.id} className="flex items-center justify-between p-3.5 rounded-xl border border-slate-100 text-sm hover:border-emerald-100 hover:bg-[#E8F5E9]/10 transition-all">
+                  <a href={f.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-[#2E7D32] font-bold hover:underline flex-1 min-w-0">
                     {f.url.includes('.pdf') ? <FileText size={15} /> : <Image size={15} />}
                     <span className="truncate">{f.label}</span>
                     <ExternalLink size={12} />
@@ -173,7 +173,7 @@ export default function TenantDetailPage() {
         ) : (
           <div className="space-y-2">
             {tenant.invoices?.map((inv) => (
-              <Link key={inv.id} to={`/invoices/${inv.id}`} className="flex items-center justify-between p-4 rounded-xl border border-slate-100 hover:border-blue-100 hover:bg-blue-50/10 active:scale-[0.98] transition-all duration-200">
+              <Link key={inv.id} to={`/invoices/${inv.id}`} className="flex items-center justify-between p-4 rounded-xl border border-slate-100 hover:border-emerald-100 hover:bg-emerald-50/10 active:scale-[0.98] transition-all duration-200">
                 <span className="text-sm font-bold text-slate-800">Tháng {inv.month}/{inv.year}</span>
                 <div className="flex items-center gap-4">
                   <span className="text-sm font-extrabold text-slate-800">{formatCurrency(inv.totalAmount)}</span>

@@ -63,7 +63,7 @@ export default function RoomDetailPage() {
             ) : (
               <div className="space-y-2">
                 {room.tenants?.map((t) => (
-                  <Link key={t.id} to={`/tenants/${t.id}`} className="block p-4 rounded-xl border border-slate-100 hover:border-blue-100 hover:bg-blue-50/10 active:scale-[0.98] transition-all duration-200">
+                  <Link key={t.id} to={`/tenants/${t.id}`} className="block p-4 rounded-xl border border-slate-100 hover:border-emerald-100 hover:bg-emerald-50/10 active:scale-[0.98] transition-all duration-200">
                     <p className="font-bold text-slate-800 text-sm">{t.name}</p>
                     <p className="text-xs text-slate-400 mt-1">📞 {t.phone}</p>
                   </Link>
@@ -81,7 +81,7 @@ export default function RoomDetailPage() {
           ) : (
             <div className="space-y-2.5">
               {room.invoices?.map((inv) => (
-                <Link key={inv.id} to={`/invoices/${inv.id}`} className="flex items-center justify-between p-4 rounded-xl border border-slate-100 hover:border-blue-100 hover:bg-blue-50/10 active:scale-[0.98] transition-all duration-200">
+                <Link key={inv.id} to={`/invoices/${inv.id}`} className="flex items-center justify-between p-4 rounded-xl border border-slate-100 hover:border-emerald-100 hover:bg-emerald-50/10 active:scale-[0.98] transition-all duration-200">
                   <div className="flex items-center gap-3">
                     <div className="p-2 bg-slate-50 border border-slate-100 rounded-lg text-slate-500">
                       <FileText size={16} />

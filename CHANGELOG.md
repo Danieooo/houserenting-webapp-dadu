@@ -5,6 +5,47 @@ All notable changes to the **House Renting App** project will be documented in t
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.4] - 2026-05-31
+
+### Added
+- **Phủ Theme Botanic Floria Toàn Diện (Taste-Skill Redesign)**:
+  - Thiết lập hệ **Design Tokens** tự nhiên thống nhất: Nền Canvas kem ấm `#FDFBF7` (`bg-cream-warm`), xanh xô thơm Sage Green `#2E7D32` làm màu thương hiệu chính thay thế cho màu xanh dương cũ, và màu đất nung Terracotta `#E65100` cho các nút bấm cảnh báo hoặc nút Chuyển ra.
+  - **LoginPage**: Thay đổi nút submit và focus ring sang màu xanh Sage, trang trí thêm họa tiết SVG chiếc lá thanh nhã ở bốn góc banner, đồng thời bổ sung các nhánh lá SVG chìm bay bổng tại nền trang và bên trong thẻ Form đăng nhập.
+  - **RoomsPage & RoomDetailPage**: Thiết kế mầm cây SVG làm placeholder nghệ thuật khi chưa có phòng (Empty state), đổi viền hover và giá tiền hiển thị sang màu Sage Green.
+  - **TenantsPage & TenantDetailPage**: Thẻ khách thuê bo góc kem ấm với avatar xanh lá, Dropzone đính kèm tài liệu CCCD/hợp đồng viền đứt nét xanh Sage mềm mịn, nút Chuyển ra màu đất nung Terracotta `#E65100` nổi bật và ấm áp.
+  - **InvoicesPage & InvoiceDetailPage**: Bảng hóa đơn bo góc bento `rounded-3xl` bọc viền kem, dòng tiêu đề hàng nền kem xô thơm nhạt, biểu tượng mầm cây `🌿` cho Form tạo hàng loạt, và tinh chỉnh nét phân dòng đứt thành màu xô thơm cực mờ nhạt `border-emerald-100/50`.
+  - **SettingsPage**: Cài đặt ngân hàng, nút Lưu và sao lưu CSV được thiết kế bo tròn hữu cơ dùng tông màu chủ đạo xô thơm dịu mát, đồng thời bổ sung họa tiết nhánh lá SVG chìm cao cấp ở góc thẻ thông tin nhà trọ.
+  - **DashboardPage**: Tái thiết kế **Botanic Welcome Hero Card** chuyển sang dải gradient kem ấm `#FDFBF7`, `#F5F2EB` và xanh xô thơm nhạt `#E8F5E9]/50` mượt mà, hòa trộn với ảnh thực tế `floria_banner.png` đã lược bỏ chữ, nâng cấp toàn bộ typography tối tương phản cực cao và các nút CTA có độ nẩy xúc giác tactile khi tương tác.
+  - **Sidebar Cleanups**: Loại bỏ hoàn toàn dòng thông tin hiển thị tài khoản admin/chủ nhà trọ ở chân thanh Sidebar tại [AppLayout.jsx](file:///c:/Users/Duyen/Documents/GitHub/houserenting-app/frontend/src/layouts/AppLayout.jsx) đem lại cảm giác tối giản đẳng cấp.
+  - **Mẫu Tin nhắn Hóa đơn**: Polish tinh tế nội dung văn bản thông báo tại [InvoiceDetailPage.jsx](file:///c:/Users/Duyen/Documents/GitHub/houserenting-app/frontend/src/pages/InvoiceDetailPage.jsx), lược bỏ xưng hô "anh/chị", đổi "xin thông báo" thành "thông báo" và "tiền phòng cơ bản" thành "tiền phòng" hợp lý và tự nhiên hơn.
+  - **Playwright E2E Resilience**: Thiết lập `test.setTimeout(90000)` kiên cố hóa chống lag mạng, bảo toàn 100% thuộc tính `data-testid` phục vụ Playwright.
+  - **Vite Build Warnings**: Khắc phục triệt để warning Tailwind của Vite bằng cách đổi thuộc tính `duration-[2000ms]` động sang inline style.
+  
+### Verified
+- ✅ Playwright E2E tests: Toàn bộ các bộ test E2E vượt qua hoàn hảo không có hiện tượng regression.
+- ✅ Production build: Biên dịch Vercel/Vite bundle frontend thành công 100% với 0 errors và 0 warnings.
+
+## [1.4.3] - 2026-05-31
+
+### Added
+- **Quy trình SDLC Tích hợp Superpowers Skills**:
+  - Tích hợp 6 kỹ năng tuyển chọn (brainstorming, writing-plans, executing-plans, TDD, verification-before-completion, systematic-debugging) vào quy trình phát triển định hướng đặc tả trong [AGENTS.md](file:///c:/Users/Duyen/Documents/GitHub/houserenting-app/AGENTS.md).
+- **Giao diện Premium Botanic Floria (Dashboard & Layout Redesign)**:
+  - Thiết kế **Botanic Welcome Hero Card** ở đỉnh trang [DashboardPage.jsx](file:///c:/Users/Duyen/Documents/GitHub/houserenting-app/frontend/src/pages/DashboardPage.jsx) bọc bằng gradient xanh xô thơm tự nhiên `#E8F5E9` và kem ấm `#FCFAF6`, kết hợp họa tiết lá vẽ SVG tinh tế và nhúng ảnh thực tế `floria_banner.png` (sắc nét, chiều sâu cao).
+  - Tái cấu trúc **Bento Stat Cards** mới với các góc bo tròn sâu `rounded-[24px]` (3xl), nền trắng sữa nổi bật trên nền kem, và bóng mờ màu dịu đặc trưng theo tông màu của từng chỉ số (Doanh thu xô thơm `#2E7D32`, Phòng trống Cobalt `#0052CC`, Chưa thu gạch nung `#E65100`). Bổ sung hiệu ứng tương tác co giãn khi di chuột và bấm lún mechanical active phản hồi.
+  - Tinh chỉnh các biểu đồ Recharts (Bar fill Cobalt hoàng gia, Line stroke Sage green với bóng mờ, bọc Bento Card bo góc `rounded-3xl` viền kem mờ).
+  - Nâng cấp **Sidebar & Logo Container** tại [AppLayout.jsx](file:///c:/Users/Duyen/Documents/GitHub/houserenting-app/frontend/src/layouts/AppLayout.jsx) sử dụng nền kem ấm `#FCFAF6`, viền xô thơm siêu mảnh `border-r border-emerald-100/30`, biểu tượng Logo chiếc lá cách điệu cao cấp trong nền xanh lá xô thơm `bg-[#E8F5E9] text-[#2E7D32]`, và hiệu ứng Active Tab bóng Cobalt sang trọng cùng hover nav item pastel xô thơm.
+
+### Fixed
+- **Tăng tính kiên cố cho E2E Playwright happy path**:
+  - Gia tăng thời gian chờ (`timeout: 20000`) cho hành động tạo hóa đơn hàng loạt trong `happy-path.spec.js` để kiên cố hóa trước độ trễ truy vấn mạng của database Postgres Neon trên môi trường Render.
+
+### Verified
+- ✅ Playwright E2E test suite: Toàn bộ 3 tệp test (`happy-path`, `notification-flow`, `qr-validation`) vượt qua thành công.
+- ✅ Production build: Biên dịch frontend `npm run build` thành công xuất sắc, không lỗi.
+
+---
+
 ## [1.4.2] - 2026-05-31
 
 ### Added

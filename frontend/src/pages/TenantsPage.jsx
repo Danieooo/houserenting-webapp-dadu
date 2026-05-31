@@ -65,14 +65,14 @@ function TenantForm({ onClose, initialData }) {
             { label: 'CCCD/CMND', name: 'idCard', placeholder: '012345678901' },
           ].map(({ label, name, placeholder }) => (
             <div key={name}>
-              <label className="block text-sm font-medium mb-1">{label}</label>
-              <input {...register(name)} placeholder={placeholder} data-testid={`tenant-form-${name}`} className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 outline-none" />
+              <label className="block text-sm font-semibold text-slate-600 mb-1.5">{label}</label>
+              <input {...register(name)} placeholder={placeholder} data-testid={`tenant-form-${name}`} className="w-full px-4 py-2.5 border border-slate-100 bg-slate-50/50 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-50 focus:border-[#2E7D32] transition-all duration-200 outline-none font-medium text-slate-700" />
               {errors[name] && <p className="text-red-500 text-xs mt-1">{errors[name].message}</p>}
             </div>
           ))}
           <div>
-            <label className="block text-sm font-medium mb-1">Phòng *</label>
-            <select {...register('roomId')} data-testid="tenant-form-roomId" className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 outline-none">
+            <label className="block text-sm font-semibold text-slate-600 mb-1.5">Phòng *</label>
+            <select {...register('roomId')} data-testid="tenant-form-roomId" className="w-full px-4 py-2.5 border border-slate-100 bg-slate-50/50 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-50 focus:border-[#2E7D32] transition-all duration-200 outline-none font-medium text-slate-700">
               <option value="">-- Chọn phòng --</option>
               {availableRooms.map(r => (
                 <option key={r.id} value={r.id}>
@@ -84,22 +84,22 @@ function TenantForm({ onClose, initialData }) {
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium mb-1">Ngày vào ở *</label>
-              <input type="date" {...register('moveInDate')} data-testid="tenant-form-moveInDate" className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 outline-none" />
+              <label className="block text-sm font-semibold text-slate-600 mb-1.5">Ngày vào ở *</label>
+              <input type="date" {...register('moveInDate')} data-testid="tenant-form-moveInDate" className="w-full px-4 py-2.5 border border-slate-100 bg-slate-50/50 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-50 focus:border-[#2E7D32] transition-all duration-200 outline-none font-medium text-slate-700" />
               {errors.moveInDate && <p className="text-red-500 text-xs mt-1">{errors.moveInDate.message}</p>}
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Ngày kết thúc</label>
-              <input type="date" {...register('moveOutDate')} data-testid="tenant-form-moveOutDate" className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 outline-none" />
+              <label className="block text-sm font-semibold text-slate-600 mb-1.5">Ngày kết thúc</label>
+              <input type="date" {...register('moveOutDate')} data-testid="tenant-form-moveOutDate" className="w-full px-4 py-2.5 border border-slate-100 bg-slate-50/50 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-50 focus:border-[#2E7D32] transition-all duration-200 outline-none font-medium text-slate-700" />
             </div>
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">Tiền cọc (đ)</label>
-            <input type="number" {...register('deposit')} data-testid="tenant-form-deposit" placeholder="0" className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 outline-none" />
+            <label className="block text-sm font-semibold text-slate-600 mb-1.5">Tiền cọc (đ)</label>
+            <input type="number" {...register('deposit')} data-testid="tenant-form-deposit" placeholder="0" className="w-full px-4 py-2.5 border border-slate-100 bg-slate-50/50 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-50 focus:border-[#2E7D32] transition-all duration-200 outline-none font-medium text-slate-700" />
           </div>
           <div className="flex gap-3 pt-2">
-            <button type="button" onClick={onClose} className="flex-1 px-4 py-2 border rounded-lg text-sm hover:bg-gray-50">Hủy</button>
-            <button type="submit" disabled={isPending} data-testid="tenant-form-submit" className="flex-1 px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 disabled:opacity-60">
+            <button type="button" onClick={onClose} className="flex-1 px-4 py-2.5 border border-slate-100 rounded-xl text-sm font-bold text-slate-500 hover:bg-slate-50 active:scale-[0.98] transition-all">Hủy</button>
+            <button type="submit" disabled={isPending} data-testid="tenant-form-submit" className="flex-1 px-4 py-2.5 bg-[#2E7D32] hover:bg-[#2E7D32]/95 hover:shadow-[0_8px_20px_rgba(46,125,50,0.15)] text-white rounded-xl text-sm font-bold disabled:opacity-60 active:scale-[0.98] transition-all shadow-md">
               {isPending ? 'Đang lưu...' : (initialData ? 'Cập nhật' : 'Thêm khách')}
             </button>
           </div>
@@ -147,11 +147,11 @@ export default function TenantsPage() {
           <p className="text-sm text-slate-500 mt-1">{tenants.length} khách thuê</p>
         </div>
         <div className="flex items-center gap-3">
-          <select value={filter} onChange={(e) => setFilter(e.target.value)} className="px-3.5 py-2 border border-slate-100 rounded-xl text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-blue-100">
+          <select value={filter} onChange={(e) => setFilter(e.target.value)} className="px-3.5 py-2 border border-slate-100 rounded-xl text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-100 focus:border-[#2E7D32] bg-white">
             <option value="true">Đang thuê</option>
             <option value="false">Đã rời đi</option>
           </select>
-          <button onClick={() => setShowForm(true)} data-testid="add-tenant-btn" className="flex items-center gap-2 bg-cobalt-royal text-white px-5 py-2.5 rounded-xl text-sm font-semibold hover:-translate-y-0.5 active:scale-[0.98] transition-all duration-200 shadow-[0_4px_12px_rgba(0,82,204,0.15)]">
+          <button onClick={() => setShowForm(true)} data-testid="add-tenant-btn" className="flex items-center gap-2 bg-[#2E7D32] hover:bg-[#2E7D32]/95 text-white px-5 py-2.5 rounded-xl text-sm font-semibold hover:-translate-y-0.5 active:scale-[0.98] transition-all duration-200 shadow-[0_4px_12px_rgba(46,125,50,0.15)]">
             <Plus size={16} /> Thêm khách
           </button>
         </div>
@@ -162,23 +162,26 @@ export default function TenantsPage() {
           {[...Array(6)].map((_, i) => <SkeletonCard key={i} />)}
         </div>
       ) : tenants.length === 0 ? (
-        <div className="text-center py-20 text-slate-400 bg-white rounded-2xl border border-slate-100 p-8">
-          <Users size={48} className="mx-auto mb-4 opacity-30 text-cobalt-royal" />
-          <p className="font-medium text-sm">Không có khách thuê nào</p>
+        <div className="text-center py-20 bg-white rounded-[24px] border border-emerald-100/20 p-8 shadow-[0_8px_30px_rgba(0,0,0,0.01)] flex flex-col items-center justify-center">
+          <div className="w-16 h-16 bg-[#E8F5E9] text-[#2E7D32] rounded-full flex items-center justify-center mb-4 border border-emerald-100/50">
+            <Users size={32} />
+          </div>
+          <p className="font-bold text-slate-800 text-base leading-tight">Chưa có khách thuê nào 🌿</p>
+          <p className="text-xs text-slate-400 font-semibold mt-1.5 max-w-xs text-center leading-relaxed">Hãy bấm nút "Thêm khách" ở góc trên để tạo mới hồ sơ khách thuê và gán phòng.</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {tenants.map((t) => (
-            <div key={t.id} data-testid={`tenant-card-${t.name.replace(/\s+/g, '-')}`} className="bg-white rounded-2xl border border-slate-100 hover:border-blue-100 hover:-translate-y-1 hover:shadow-[0_12px_40px_rgba(0,0,0,0.03)] active:scale-[0.99] transition-all duration-300 ease-in-out p-6 flex flex-col justify-between">
+            <div key={t.id} data-testid={`tenant-card-${t.name.replace(/\s+/g, '-')}`} className="bg-white rounded-2xl border border-slate-100 hover:border-emerald-200/50 hover:-translate-y-1 hover:shadow-[0_12px_40px_rgba(46,125,50,0.03)] active:scale-[0.99] transition-all duration-300 ease-in-out p-6 flex flex-col justify-between">
               <div>
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-blue-50 text-cobalt-royal font-bold text-base flex items-center justify-center border border-blue-100">
+                    <div className="w-10 h-10 rounded-full bg-[#E8F5E9] text-[#2E7D32] font-bold text-base flex items-center justify-center border border-emerald-100/50">
                       {t.name.charAt(0).toUpperCase()}
                     </div>
                     <div>
                       <h3 className="font-bold text-slate-800 text-base leading-tight">{t.name}</h3>
-                      <Link to={`/rooms/${t.room?.id}`} className="text-xs text-cobalt-royal hover:underline font-semibold mt-1 inline-block">
+                      <Link to={`/rooms/${t.room?.id}`} className="text-xs text-[#2E7D32] hover:underline font-semibold mt-1 inline-block">
                         {t.room?.name}
                       </Link>
                     </div>
@@ -199,7 +202,7 @@ export default function TenantsPage() {
                   </div>
                   <div className="bg-slate-50 border border-slate-100/50 rounded-xl p-3 flex justify-between items-center mt-4">
                     <span className="text-slate-400 text-xs font-bold uppercase tracking-wider">Tiền cọc</span>
-                    <span className="font-extrabold text-slate-800 text-sm">{formatCurrency(t.deposit)}</span>
+                    <span className="font-extrabold text-[#2E7D32] text-sm">{formatCurrency(t.deposit)}</span>
                   </div>
                 </div>
               </div>

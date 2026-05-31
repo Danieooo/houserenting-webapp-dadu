@@ -44,11 +44,11 @@ Dự án hiện tại được quản lý nghiêm ngặt bởi bộ tài liệu 
 
 ## 3. Quy tắc làm việc cốt lõi (Governance & System Rules)
 
-Để tránh hiện tượng viết code tự phát không kiểm soát ("cowboy coding"), dự án bắt buộc phải tuân thủ chu trình phát triển **Spec-Driven Development Workflow** gồm 4 bước:
+Để tránh hiện tượng viết code tự phát không kiểm soát ("cowboy coding"), dự án bắt buộc phải tuân thủ chu trình phát triển **Spec-Driven Development Workflow** gồm 4 bước kết hợp bộ kỹ năng **Superpowers Plugin**:
 
-1.  **Bước 1: Quy hoạch Đặc tả (Specification Phase)**: Khi có tính năng mới hoặc yêu cầu sửa đổi, AI bắt buộc phải phân tích và cập nhật các tệp `requirements.md` và `design.md` trong `.kiro/specs/...` trước tiên. Chỉ khi spec được người dùng phê duyệt thông qua *Implementation Plan* thì mới được chuyển sang viết code.
-2.  **Bước 2: Hiện thực hóa theo Task (Modular Coding)**: Tạo tệp `task.md` lâm thời trong thư mục `.system_generated` để theo dõi. Lập trình mượt mà, đúng cấu trúc, bám sát các mốc nhiệm vụ đã vạch ra.
-3.  **Bước 3: Kiểm thử & Xác thực Trực quan (Verification)**: Viết các ca kiểm thử tự động (Playwright) và chạy xác thực đa thiết bị (Desktop, Mobile, Tablet).
+1.  **Bước 1: Quy hoạch Đặc tả (Specification Phase)**: Khi có tính năng mới hoặc yêu cầu sửa đổi, áp dụng kỹ năng **`brainstorming`** để phân tích, tự hỏi và thảo luận kiến trúc sâu sắc, cập nhật các tệp đặc tả trong `.kiro/specs/...` hoặc `docs/superpowers/specs/...`. Chỉ khi thiết kế và đặc tả được phê duyệt thông qua **`writing-plans`** (Kế hoạch bite-size cấm placeholder "TBD", có code mẫu, test case rõ ràng) thì mới chuyển sang viết code.
+2.  **Bước 2: Hiện thực hóa theo Task (Modular Coding)**: Thực thi tuần tự theo kỹ năng **`executing-plans`** (inline execution trực tiếp trên `main`, không worktrees). Tạo tệp `task.md` để tự kiểm soát. Lập trình đúng cấu trúc, bám sát các mốc nhiệm vụ.
+3.  **Bước 3: Kiểm thử & Xác thực Trực quan (Verification)**: Áp dụng **`test-driven-development`** (E2E-first cho UI, RED-GREEN-REFACTOR cho logic backend) và kỹ năng **`verification-before-completion`** (Cổng xác minh nghiêm ngặt: chạy test, đọc và phân tích output, xác nhận exit code thành công TRƯỚC KHI tuyên bố). Nếu gặp lỗi, áp dụng **`systematic-debugging`** 4 pha có hệ thống, không sửa đổi mù quáng.
 4.  **Bước 4: Đồng bộ Tài liệu Gốc & Changelog (Governance & Sync)**: Trước khi bàn giao công việc, AI bắt buộc phải cập nhật trạng thái mới nhất vào hai file trụ cột: `AGENTS.md` (tài liệu này) và `CHANGELOG.md`.
 
 ---
@@ -64,7 +64,24 @@ Dự án hiện tại được quản lý nghiêm ngặt bởi bộ tài liệu 
 
 ## 5. System Status & Milestone Progress (Trạng thái hệ thống & Tiến độ)
 
-Hiện tại hệ thống đã hoàn thành xuất sắc đợt cải tiến mới nhất (Phiên bản `1.4.2`):
+Hiện tại hệ thống đã hoàn thành xuất sắc đợt cải tiến mới nhất (Phiên bản `1.4.4`):
+*   **Patch 1.4.4: Phủ Theme Botanic Floria Toàn Diện (Taste-Skill Redesign)**:
+    - Triển khai hệ thống Design Tokens tự nhiên thống nhất: Canvas nền kem ấm `#FDFBF7` (`bg-cream-warm`), Sage Green `#2E7D32` thay thế cho màu xanh dương cũ làm tông màu chính cho toàn bộ 8 màn hình, và Terracotta `#E65100` cho các cảnh báo nợ/hết hạn và nút Chuyển ra.
+    - **LoginPage**: Nút submit màu xanh Sage, focus rings màu xô thơm, trang trí họa tiết SVG lá cây mảnh dẻ ở bốn góc banner, đồng thời bổ sung các nhánh lá SVG chìm nhẹ nhàng bay bổng tại nền trang và bên trong thẻ Form đăng nhập.
+    - **RoomsPage & RoomDetailPage**: Viền hover và giá tiền hiển thị bằng màu xanh Sage, thiết kế mầm cây SVG làm placeholder nghệ thuật khi chưa có phòng, bo góc hữu cơ các tab và danh sách.
+    - **TenantsPage & TenantDetailPage**: Avatar và thẻ khách thuê bo góc kem ấm; khu vực Dropzone tải tài liệu viền đứt nét xanh Sage mềm mại; nút Trả phòng màu đất nung Terracotta `#E65100` nổi bật và ấm áp.
+    - **InvoicesPage & InvoiceDetailPage**: Bảng hóa đơn bo góc tròn sâu viền kem ấm, dòng tiêu đề nền kem xô thơm nhạt; mẫu E-Invoice tinh chỉnh các nét phân dòng đứt thành màu xô thơm cực mờ nhạt. Polish văn bản gửi thông báo (loại bỏ "anh/chị", đổi "xin thông báo" -> "thông báo", "tiền phòng cơ bản" -> "tiền phòng").
+    - **SettingsPage**: Form cài đặt ngân hàng, nút Lưu và sao lưu CSV được thiết kế bo tròn hữu cơ sử dụng tông màu chủ đạo xô thơm dịu mát, đồng thời bổ sung họa tiết nhánh lá SVG chìm cao cấp ở góc thẻ thông tin nhà trọ.
+    - **DashboardPage**: Tái thiết kế **Botanic Welcome Hero Card** chuyển sang dải gradient kem ấm `#FDFBF7`, `#F5F2EB` và xanh xô thơm nhạt `#E8F5E9]/50` mượt mà, kết hợp với ảnh thực tế `floria_banner.png` đã loại bỏ hoàn toàn chữ inside, nâng cấp typography tối và các nút CTA có độ nẩy xúc giác tactile khi tương tác.
+    - **AppLayout (Sidebar)**: Lược bỏ hoàn toàn khối thông tin hiển thị tài khoản admin/chủ nhà trọ ở chân thanh Sidebar để tối giản hóa giao diện.
+    - Bảo toàn 100% thuộc tính `data-testid` của Playwright, nới rộng timeout lên `90000ms` chống lag mạng, và đổi style thuộc tính động `duration-[2000ms]` sang inline style để triệt tiêu toàn bộ build warnings.
+*   **Patch 1.4.3: Họa Tiết Nghệ Thuật Botanic Floria & Tích Hợp Superpowers Skills**:
+    - Tích hợp 6 kỹ năng **Superpowers Plugin** (brainstorming, writing-plans, executing-plans, TDD, verification-before-completion, systematic-debugging) vào quy trình phát triển định hướng đặc tả của dự án để đảm bảo tính kiên cố tuyệt đối.
+    - Phát triển giao diện **Botanic Floria UI** sang trọng: Thiết kế **Botanic Welcome Hero Card** ở đầu [DashboardPage.jsx](file:///c:/Users/Duyen/Documents/GitHub/houserenting-app/frontend/src/pages/DashboardPage.jsx) dạng gradient xô thơm kết hợp họa tiết lá vẽ SVG và ảnh thực tế `floria_banner.png` (sắc nét, chiều sâu cao).
+    - Tái cấu trúc các thẻ **Bento Stat Cards** mới bo góc tròn sâu `rounded-[24px]` (3xl), nền trắng sữa, và bóng mờ đặc trưng theo tông màu của từng chỉ số (Doanh thu xô thơm `#2E7D32`, Phòng trống Cobalt `#0052CC`, Chưa thu gạch nung `#E65100`), có hiệu ứng tương tác co giãn di chuột và bấm lún mechanical active.
+    - Polish biểu đồ Recharts (Bar fill Cobalt hoàng gia, Line stroke Sage green với bóng mờ, bọc Bento Card bo góc `rounded-3xl` viền kem mờ).
+    - Nâng cấp **Sidebar & Logo Container** tại [AppLayout.jsx](file:///c:/Users/Duyen/Documents/GitHub/houserenting-app/frontend/src/layouts/AppLayout.jsx) sử dụng nền kem ấm `#FCFAF6`, viền xô thơm siêu mảnh `border-r border-emerald-100/30`, biểu tượng Logo chiếc lá cách điệu cao cấp trong nền xanh lá xô thơm `bg-[#E8F5E9] text-[#2E7D32]`, và Active Tab bóng Cobalt sang trọng cùng hover nav item pastel xô thơm.
+    - Gia tăng thời gian chờ (`timeout: 20000`) cho hành động tạo hóa đơn hàng loạt trong `happy-path.spec.js` để kiên cố hóa trước độ trễ truy vấn mạng của database Postgres Neon trên môi trường Render.
 *   **Patch 1.4.2: Premium UI Redesign (Modern Cobalt & Cream)**:
     - Triển khai phông chữ cao cấp **Outfit** làm font chữ chính của toàn bộ ứng dụng và thiết lập hệ màu sắc tương phản dịu mắt **Modern Cobalt & Cream** (Nền kem ấm `#FDFBF7`, Xanh Cobalt `#0052CC`, viền xám khói `#E2E8F0`).
     - Nâng cấp màn hình danh sách phòng trọ [RoomsPage.jsx](file:///c:/Users/Duyen/Documents/GitHub/houserenting-app/frontend/src/pages/RoomsPage.jsx) dạng grid Bento Cards cao cấp, kết hợp tag trạng thái màu pastel sang trọng, có hiệu ứng nâng thẻ di chuột mịn và bấm lún phản hồi cơ học `active:scale-[0.98]`.
