@@ -5,6 +5,14 @@ All notable changes to the **House Renting App** project will be documented in t
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.5] - 2026-05-31
+
+### Added
+- **Tài liệu Hóa & Tối giản Monorepo (Documentation Cleanup)**:
+  - Rà soát toàn bộ hệ thống tài liệu và xóa bỏ 7 tệp Markdown lỗi thời, không nhất quán trong dự án (bao gồm toàn bộ thư mục `docs/superpowers/`, hướng dẫn dự án mới mẫu `HOW-TO-START-A-NEW-PROJECT.md` và báo cáo cũ `houserenting-app-final-summary.md`).
+  - Viết lại hoàn toàn tệp `README.md` tại thư mục gốc giới thiệu chi tiết về chủ đề giao diện Botanic Floria UI (Kem ấm, Xanh Sage, Bento Grid), các tính năng nghiệp vụ cốt lõi (VietQR 100% EMVCo/Napas, Pro-rata, Google Drive backup), và lập sơ đồ tài nguyên Monorepo rõ ràng.
+  - Cập nhật tài liệu quản trị điều phối dự án `AGENTS.md` và tệp lịch sử thay đổi `CHANGELOG.md` đồng bộ 100%.
+
 ## [1.4.4] - 2026-05-31
 
 ### Added

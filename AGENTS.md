@@ -37,8 +37,9 @@ Dự án hiện tại được quản lý nghiêm ngặt bởi bộ tài liệu 
 *   **Mã nguồn Codebase**:
     *   [frontend/](file:///c:/Users/Duyen/Documents/GitHub/houserenting-app/frontend) — Dự án Vite + React.
     *   [backend/](file:///c:/Users/Duyen/Documents/GitHub/houserenting-app/backend) — Dự án Express + Prisma.
-*   **Tài liệu hỗ trợ cũ**:
-    *   `docs/superpowers/specs/...` & `docs/superpowers/plans/...` (Lưu giữ thông tin thiết kế và kế hoạch ban đầu trước khi chuyển dịch sang bộ kit Spec-driven mới).
+*   **Tài liệu hỗ trợ và Deploy**:
+    *   [deployment-steps.md](file:///c:/Users/Duyen/Documents/GitHub/houserenting-app/docs/deployment-steps.md) — Hướng dẫn chi tiết các bước triển khai backend/frontend lên môi trường sản phẩm đám mây.
+    *   [README.md](file:///c:/Users/Duyen/Documents/GitHub/houserenting-app/README.md) — Trang hướng dẫn bắt đầu nhanh và giới thiệu giao diện Botanic Floria UI cao cấp của sản phẩm.
 
 ---
 
@@ -64,7 +65,11 @@ Dự án hiện tại được quản lý nghiêm ngặt bởi bộ tài liệu 
 
 ## 5. System Status & Milestone Progress (Trạng thái hệ thống & Tiến độ)
 
-Hiện tại hệ thống đã hoàn thành xuất sắc đợt cải tiến mới nhất (Phiên bản `1.4.4`):
+Hiện tại hệ thống đã hoàn thành xuất sắc đợt cải tiến mới nhất (Phiên bản `1.4.5`):
+*   **Patch 1.4.5: Tài liệu Hóa & Tối giản Monorepo (Documentation Cleanup)**:
+    - Rà soát toàn bộ hệ thống tài liệu và xóa bỏ 7 tệp Markdown lỗi thời, không nhất quán trong dự án (bao gồm toàn bộ thư mục `docs/superpowers/`, hướng dẫn dự án mới mẫu `HOW-TO-START-A-NEW-PROJECT.md` và báo cáo cũ `houserenting-app-final-summary.md`).
+    - Viết lại hoàn toàn tệp `README.md` tại thư mục gốc giới thiệu chi tiết về chủ đề giao diện Botanic Floria UI (Kem ấm, Xanh Sage, Bento Grid), các tính năng nghiệp vụ cốt lõi (VietQR 100% EMVCo/Napas, Pro-rata, Google Drive backup), và lập sơ đồ tài nguyên Monorepo rõ ràng.
+    - Cập nhật tài liệu quản trị điều phối dự án `AGENTS.md` và tệp lịch sử thay đổi `CHANGELOG.md` đồng bộ 100%.
 *   **Patch 1.4.4: Phủ Theme Botanic Floria Toàn Diện (Taste-Skill Redesign)**:
     - Triển khai hệ thống Design Tokens tự nhiên thống nhất: Canvas nền kem ấm `#FDFBF7` (`bg-cream-warm`), Sage Green `#2E7D32` thay thế cho màu xanh dương cũ làm tông màu chính cho toàn bộ 8 màn hình, và Terracotta `#E65100` cho các cảnh báo nợ/hết hạn và nút Chuyển ra.
     - **LoginPage**: Nút submit màu xanh Sage, focus rings màu xô thơm, trang trí họa tiết SVG lá cây mảnh dẻ ở bốn góc banner, đồng thời bổ sung các nhánh lá SVG chìm nhẹ nhàng bay bổng tại nền trang và bên trong thẻ Form đăng nhập.
