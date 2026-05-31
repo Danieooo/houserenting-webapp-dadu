@@ -44,7 +44,6 @@ export default function InvoiceDetailPage() {
     const waterUsed = invoice.waterNow - invoice.waterPrev;
     const shopName = settings?.shopName || 'Nhà trọ';
     const paymentInfo = settings?.paymentInfo || 'Thông tin ngân hàng cấu hình trong Cài đặt';
-    const invoiceUrl = `${window.location.origin}/invoices/${invoice.id}`;
 
     return `🔔 *THÔNG BÁO TIỀN PHÒNG - ${invoice.room?.name?.toUpperCase()}* 🔔
 
@@ -58,10 +57,8 @@ Nhà trọ *${shopName}* xin thông báo tiền phòng tháng ${invoice.month}/$
 ${invoice.otherFees > 0 ? `- *Phí khác (${invoice.otherNote || 'Không có'}):* ${formatCurrency(invoice.otherFees)}\n` : ''}----------------------------------
 💰 *TỔNG CỘNG:* *${formatCurrency(invoice.totalAmount)}*
 
-*Quý khách vui lòng thanh toán bằng cách quét mã QR trên hóa đơn hoặc chuyển khoản theo thông tin:*
-🏦 ${paymentInfo}
-
-👉 *Xem hóa đơn chi tiết tại:* ${invoiceUrl}`;
+*Quý khách vui lòng thanh toán bằng cách quét mã QR trên file PDF đính kèm hoặc chuyển khoản theo thông tin:*
+🏦 ${paymentInfo}`;
   };
 
   const handleCopyText = async () => {

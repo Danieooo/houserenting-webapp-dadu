@@ -20,6 +20,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Đảm bảo an toàn 100% khi xóa phòng có các thông tin khách thuê lịch sử (`active = false`) hay hóa đơn đã xuất mà không gây lỗi khóa ngoại.
 - **Sửa lỗi phân giải search path cơ sở dữ liệu khi backup (Explicit Schema Prefix)**:
   - Bổ sung tiền tố schema `"public"` cho các truy vấn bảng trong [backup-to-gdrive.js](file:///c:/Users/Duyen/Documents/GitHub/houserenting-app/scripts/backup-to-gdrive.js) (truy vấn `"public"."User"`, `"public"."Room"`,...) tránh lỗi `relation "User" does not exist` do sự không đồng nhất về đường dẫn tìm kiếm mặc định (`search_path`) của kết nối PostgreSQL.
+- **Tối ưu hóa nội dung thông báo Zalo/SMS (Notification Template Polish)**:
+  - Loại bỏ đường dẫn liên kết xem hóa đơn trên web trong [InvoiceDetailPage.jsx](file:///c:/Users/Duyen/Documents/GitHub/houserenting-app/frontend/src/pages/InvoiceDetailPage.jsx) (do hệ thống được cấu hình bảo mật chỉ cho phép chủ trọ truy cập), thay thế bằng hướng dẫn người thuê đối soát trực tiếp trên tệp PDF đính kèm nhằm phù hợp hoàn toàn với ngữ cảnh thực tế (khách thuê không cần tài khoản đăng nhập).
 
 ### Verified
 - ✅ Chạy kiểm thử đơn vị backend: `npm run test` vượt qua thành công, đảm bảo các hàm VietQR hoạt động bình thường.
