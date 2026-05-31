@@ -37,7 +37,7 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground;
-    font-family: 'Inter', sans-serif;
+    @apply bg-cream-warm text-foreground;
+    font-family: 'Outfit', sans-serif;
   }
 }

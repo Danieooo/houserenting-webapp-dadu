@@ -135,35 +135,38 @@ ${invoice.otherFees > 0 ? `- *Phí khác (${invoice.otherNote || 'Không có'}):
   const waterUsed = invoice.waterNow - invoice.waterPrev;
 
   return (
-    <div className="space-y-6 max-w-2xl">
-      <div className="flex items-center gap-3">
-        <Link to="/invoices" className="text-muted-foreground hover:text-foreground"><ArrowLeft size={20} /></Link>
-        <div>
-          <h1 className="text-2xl font-bold">Hóa đơn tháng {invoice.month}/{invoice.year}</h1>
-          <p className="text-sm text-muted-foreground">{invoice.room?.name} · {invoice.tenant?.name}</p>
+    <div className="space-y-6 max-w-3xl">
+      <div className="flex items-center justify-between pb-4 border-b border-slate-100">
+        <div className="flex items-center gap-3">
+          <Link to="/invoices" className="text-slate-400 hover:text-slate-600 active:scale-[0.98] transition-all duration-200"><ArrowLeft size={20} /></Link>
+          <div>
+            <h1 className="text-2xl font-bold text-slate-800">Hóa đơn tháng {invoice.month}/{invoice.year}</h1>
+            <p className="text-sm text-slate-500 mt-1">{invoice.room?.name} · {invoice.tenant?.name}</p>
+          </div>
         </div>
       </div>
 
-      <div className="bg-white rounded-xl border shadow-sm overflow-hidden">
-        <div className="p-6 border-b flex items-center justify-between">
+      <div className="bg-white rounded-2xl border border-slate-100 shadow-[0_8px_30px_rgba(0,0,0,0.01)] overflow-hidden">
+        <div className="p-6 border-b border-slate-100 flex flex-wrap gap-4 items-center justify-between">
           <div>
-            <p className="text-sm text-muted-foreground">Kỳ tính: {formatDate(invoice.periodStart)} – {formatDate(invoice.periodEnd)}</p>
+            <span className="text-xs text-slate-400 font-bold uppercase tracking-wider block">Kỳ tính toán</span>
+            <p className="text-sm font-semibold text-slate-600 mt-0.5">{formatDate(invoice.periodStart)} – {formatDate(invoice.periodEnd)}</p>
           </div>
-          <div className="flex gap-2">
-            <button onClick={downloadPdf} data-testid="invoice-download-pdf-btn" className="flex items-center gap-1.5 px-3 py-2 border rounded-lg text-xs font-medium hover:bg-gray-50">
+          <div className="flex flex-wrap gap-2">
+            <button onClick={downloadPdf} data-testid="invoice-download-pdf-btn" className="flex items-center gap-1.5 px-4 py-2 border border-slate-100 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-50 active:scale-[0.98] transition-all duration-200">
               <Download size={13} /> PDF
             </button>
-            <button onClick={() => setShowNotifyModal(true)} data-testid="invoice-notify-btn" className="flex items-center gap-1.5 px-3 py-2 border rounded-lg text-xs font-medium bg-primary/5 text-primary hover:bg-primary/10 border-primary/20 transition-all duration-200">
+            <button onClick={() => setShowNotifyModal(true)} data-testid="invoice-notify-btn" className="flex items-center gap-1.5 px-4 py-2 bg-blue-50 border border-blue-100 text-blue-700 rounded-xl text-xs font-bold hover:bg-blue-100/50 active:scale-[0.98] transition-all duration-200">
               <Bell size={13} /> Gửi thông báo
             </button>
             {!invoice.paid && (
               <>
-                <button onClick={() => setEditing(!editing)} className="flex items-center gap-1.5 px-3 py-2 border rounded-lg text-xs font-medium hover:bg-gray-50">
+                <button onClick={() => setEditing(!editing)} className="flex items-center gap-1.5 px-4 py-2 border border-slate-100 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-50 active:scale-[0.98] transition-all duration-200">
                   {editing ? <><X size={13} /> Hủy</> : <><Edit2 size={13} /> Sửa</>}
                 </button>
                 <button onClick={() => { if (confirm('Đánh dấu đã thu tiền?')) markPaid({ paidAmount: invoice.totalAmount }); }}
                   data-testid="invoice-pay-btn"
-                  disabled={paying} className="flex items-center gap-1.5 px-3 py-2 bg-green-600 text-white rounded-lg text-xs font-medium hover:bg-green-700 disabled:opacity-60">
+                  disabled={paying} className="flex items-center gap-1.5 px-4 py-2 bg-emerald-50 border border-emerald-100 text-emerald-700 rounded-xl text-xs font-bold hover:bg-emerald-100/50 active:scale-[0.98] transition-all duration-200">
                   <CheckCircle2 size={13} /> Thu tiền
                 </button>
               </>
@@ -171,35 +174,38 @@ ${invoice.otherFees > 0 ? `- *Phí khác (${invoice.otherNote || 'Không có'}):
           </div>
         </div>
 
-        <div className="p-6 space-y-3">
+        <div className="p-6 space-y-4">
           {[
-            ['Tiền phòng', formatCurrency(invoice.baseRent)],
-            [`Điện: ${invoice.electricityPrev} → ${editing ? '?' : invoice.electricityNow} (${elecUsed} kWh × ${formatCurrency(invoice.electricityPrice)})`, formatCurrency(elecUsed * invoice.electricityPrice)],
-            [`Nước: ${invoice.waterPrev} → ${editing ? '?' : invoice.waterNow} (${waterUsed} m³ × ${formatCurrency(invoice.waterPrice)})`, formatCurrency(waterUsed * invoice.waterPrice)],
-            ['Rác', formatCurrency(invoice.garbageFee)],
-            [`Phí khác${invoice.otherNote ? ' (' + invoice.otherNote + ')' : ''}`, formatCurrency(invoice.otherFees)],
-          ].map(([label, value], i) => (
-            <div key={i} className="flex justify-between text-sm py-2 border-b last:border-0">
-              <span className="text-muted-foreground">{label}</span>
-              <span className="font-medium">{value}</span>
+            ['Tiền phòng cơ bản', '-', formatCurrency(invoice.baseRent)],
+            [`Tiền điện (Chỉ số: ${invoice.electricityPrev} → ${editing ? '?' : invoice.electricityNow})`, `${elecUsed} kWh × ${formatCurrency(invoice.electricityPrice)}`, formatCurrency(elecUsed * invoice.electricityPrice)],
+            [`Tiền nước (Chỉ số: ${invoice.waterPrev} → ${editing ? '?' : invoice.waterNow})`, `${waterUsed} m³ × ${formatCurrency(invoice.waterPrice)}`, formatCurrency(waterUsed * invoice.waterPrice)],
+            ['Phí rác / vệ sinh', '-', formatCurrency(invoice.garbageFee)],
+            [`Phí dịch vụ khác${invoice.otherNote ? ' (' + invoice.otherNote + ')' : ''}`, '-', formatCurrency(invoice.otherFees)],
+          ].map(([label, sub, value], i) => (
+            <div key={i} className="flex justify-between items-center py-3.5 border-b border-dashed border-slate-100 last:border-0 text-sm">
+              <div className="flex flex-col">
+                <span className="font-bold text-slate-800">{label}</span>
+                {sub && sub !== '-' && <span className="text-[10px] text-slate-400 font-semibold mt-0.5">{sub}</span>}
+              </div>
+              <span className="font-extrabold text-slate-800">{value}</span>
             </div>
           ))}
 
-          <div className="flex justify-between text-base font-bold pt-2">
-            <span>Tổng cộng</span>
-            <span className="text-primary" data-testid="invoice-total-amount">{formatCurrency(invoice.totalAmount)}</span>
+          <div className="flex justify-between items-center text-base font-black pt-4 border-t border-slate-100">
+            <span className="text-slate-800">TỔNG CỘNG HÓA ĐƠN</span>
+            <span className="text-2xl font-black text-blue-600 animate-pulse" data-testid="invoice-total-amount">{formatCurrency(invoice.totalAmount)}</span>
           </div>
 
-          <div className="pt-2">
-            <span className={`inline-flex items-center gap-1.5 text-sm px-3 py-1.5 rounded-full font-medium ${invoice.paid ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'}`}>
-              {invoice.paid ? <><CheckCircle2 size={14} /> Đã thu {formatCurrency(invoice.paidAmount)} ({formatDate(invoice.paidDate)})</> : '⏳ Chưa thu tiền'}
+          <div className="pt-4">
+            <span className={`inline-flex items-center gap-1.5 text-xs px-3.5 py-2 rounded-full font-bold border ${invoice.paid ? 'bg-green-100 text-green-700 bg-emerald-50 border-emerald-100' : 'bg-orange-50 text-orange-700 border-orange-100'}`}>
+              {invoice.paid ? <><CheckCircle2 size={14} className="text-emerald-600" /> Đã thu {formatCurrency(invoice.paidAmount)} ({formatDate(invoice.paidDate)})</> : '⏳ Chưa thu tiền'}
             </span>
           </div>
         </div>
 
         {editing && (
-          <div className="p-6 border-t bg-gray-50">
-            <h3 className="font-semibold text-sm mb-4">Cập nhật chỉ số</h3>
+          <div className="p-6 border-t border-slate-100 bg-slate-50">
+            <h3 className="font-bold text-sm mb-4 text-slate-800">Cập nhật chỉ số</h3>
             <div className="grid grid-cols-2 gap-4">
               {[
                 { label: `Chỉ số điện hiện tại (kỳ trước: ${invoice.electricityPrev})`, key: 'electricityNow', type: 'number' },
@@ -208,14 +214,14 @@ ${invoice.otherFees > 0 ? `- *Phí khác (${invoice.otherNote || 'Không có'}):
                 { label: 'Ghi chú phí khác', key: 'otherNote', type: 'text' },
               ].map(({ label, key, type }) => (
                 <div key={key} className={key === 'otherNote' ? 'col-span-2' : ''}>
-                  <label className="block text-xs font-medium mb-1 text-muted-foreground">{label}</label>
+                  <label className="block text-xs font-bold mb-1.5 text-slate-400 uppercase tracking-wider">{label}</label>
                   <input type={type} value={form[key] || ''} onChange={(e) => setForm({ ...form, [key]: e.target.value })}
-                    className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" />
+                    className="w-full px-3.5 py-2 border border-slate-100 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-100 outline-none transition-all" />
                 </div>
               ))}
             </div>
             <button onClick={() => updateInv(form)} disabled={updating}
-              className="mt-4 flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 disabled:opacity-60">
+              className="mt-4 flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white rounded-xl text-xs font-bold hover:-translate-y-0.5 active:scale-[0.98] transition-all duration-200 shadow-[0_4px_12px_rgba(37,99,235,0.15)] disabled:opacity-60">
               <Save size={14} /> {updating ? 'Đang lưu...' : 'Lưu cập nhật'}
             </button>
           </div>
@@ -223,59 +229,56 @@ ${invoice.otherFees > 0 ? `- *Phí khác (${invoice.otherNote || 'Không có'}):
       </div>
 
       {showNotifyModal && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl border shadow-2xl max-w-lg w-full overflow-hidden transform transition-all duration-300 animate-in fade-in zoom-in-95">
-            {/* Header */}
-            <div className="px-6 py-4 border-b flex justify-between items-center bg-gray-50/50">
-              <h3 className="font-bold text-gray-900 flex items-center gap-2">
-                <Bell size={18} className="text-primary" />
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-md z-50 flex items-center justify-center p-4">
+          <div className="bg-white/90 border border-white/40 rounded-2xl shadow-[0_24px_70px_rgba(0,0,0,0.08)] max-w-lg w-full overflow-hidden transform transition-all duration-300 animate-in fade-in zoom-in-95 backdrop-blur-lg">
+            <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+              <h3 className="font-bold text-slate-800 flex items-center gap-2">
+                <Bell size={18} className="text-blue-600" />
                 Gửi thông báo hóa đơn
               </h3>
-              <button onClick={() => setShowNotifyModal(false)} data-testid="close-notify-modal-btn" className="text-gray-400 hover:text-gray-600 transition-colors p-1 hover:bg-gray-100 rounded-full">
+              <button onClick={() => setShowNotifyModal(false)} data-testid="close-notify-modal-btn" className="text-slate-400 hover:text-slate-600 transition-colors p-1.5 hover:bg-slate-100 rounded-full">
                 <X size={18} />
               </button>
             </div>
 
-            {/* Body */}
             <div className="p-6 space-y-4">
               <div>
-                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Xem trước nội dung thông báo</label>
+                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Xem trước nội dung thông báo</label>
                 <pre className="w-full bg-slate-950 text-slate-100 text-xs p-4 rounded-xl font-mono overflow-y-auto max-h-64 whitespace-pre-wrap leading-relaxed border border-slate-800 shadow-inner">
                   {buildMessageText()}
                 </pre>
               </div>
 
-              <div className="bg-amber-50 border border-amber-200/60 rounded-xl p-3 text-xs text-amber-800 flex gap-2">
+              <div className="bg-blue-50/50 border border-blue-100 rounded-xl p-3.5 text-xs text-blue-700 flex gap-2">
                 <span className="font-bold">Lưu ý Zalo:</span>
-                <span>Sau khi bạn bấm "Gửi qua Zalo", hệ thống sẽ copy nội dung tin nhắn và mở khung chat với số điện thoại khách thuê. Bạn chỉ cần nhấn <strong>Ctrl+V</strong> và bấm gửi.</span>
+                <span>Sau khi bấm "Gửi qua Zalo", nội dung tin nhắn sẽ tự động copy vào bộ nhớ tạm và mở Zalo khách trọ. Bạn chỉ cần bấm <strong>Ctrl+V</strong> và gửi đi.</span>
               </div>
             </div>
 
-            {/* Footer */}
-            <div className="px-6 py-4 border-t bg-gray-50/50 flex flex-wrap gap-2 justify-end">
-              <button onClick={handleCopyText} className="flex items-center gap-1.5 px-4 py-2 border rounded-xl text-xs font-semibold bg-white hover:bg-gray-50 text-gray-700 transition-all duration-200">
+            <div className="px-6 py-4 border-t border-slate-100 bg-slate-50/50 flex flex-wrap gap-2 justify-end">
+              <button onClick={handleCopyText} className="flex items-center gap-1.5 px-4 py-2 border border-slate-100 bg-white rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-50 active:scale-[0.98] transition-all duration-200">
                 {copied ? <Check size={13} className="text-green-600" /> : <Copy size={13} />}
                 {copied ? 'Đã copy!' : 'Copy tin nhắn'}
               </button>
 
-              <button onClick={handleSendSMS} className="flex items-center gap-1.5 px-4 py-2 border rounded-xl text-xs font-semibold bg-white hover:bg-gray-50 text-gray-700 transition-all duration-200">
+              <button onClick={handleSendSMS} className="flex items-center gap-1.5 px-4 py-2 border border-slate-100 bg-white rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-50 active:scale-[0.98] transition-all duration-200">
                 <MessageSquare size={13} className="text-blue-500" />
                 Gửi SMS
               </button>
 
-              <button onClick={handleSendZalo} className="flex items-center gap-1.5 px-4 py-2 border border-blue-200 rounded-xl text-xs font-semibold bg-blue-50 hover:bg-blue-100 text-blue-700 transition-all duration-200">
+              <button onClick={handleSendZalo} className="flex items-center gap-1.5 px-4 py-2 border border-blue-200 rounded-xl text-xs font-bold bg-blue-50 hover:bg-blue-100 text-blue-700 transition-all duration-200">
                 <Send size={13} />
                 Gửi qua Zalo
               </button>
 
-              <button onClick={handleWebShare} className="flex items-center gap-1.5 px-4 py-2 border border-teal-200 rounded-xl text-xs font-semibold bg-teal-50 hover:bg-teal-100 text-teal-700 transition-all duration-200">
+              <button onClick={handleWebShare} className="flex items-center gap-1.5 px-4 py-2 border border-teal-200 rounded-xl text-xs font-bold bg-teal-50 hover:bg-teal-100 text-teal-700 transition-all duration-200">
                 <Share2 size={13} />
                 Chia sẻ nhanh
               </button>
 
               {settings?.webhookUrl && (
-                <button onClick={() => triggerWebhook()} disabled={notifying} className="flex items-center gap-1.5 px-4 py-2 bg-primary text-primary-foreground rounded-xl text-xs font-semibold hover:bg-primary/95 disabled:opacity-60 shadow-md active:scale-95 transition-all duration-200">
-                  <Bell size={13} />
+                <button onClick={() => triggerWebhook()} disabled={notifying} className="flex items-center gap-1.5 px-4 py-2 bg-blue-600 text-white rounded-xl text-xs font-bold hover:-translate-y-0.5 active:scale-[0.98] transition-all duration-200 shadow-[0_4px_12px_rgba(37,99,235,0.15)] disabled:opacity-60">
+                  <Bell size={13} className={notifying ? "animate-pulse" : ""} />
                   {notifying ? 'Đang gửi Webhook...' : 'Đẩy Webhook'}
                 </button>
               )}

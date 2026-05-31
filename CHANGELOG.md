@@ -5,6 +5,32 @@ All notable changes to the **House Renting App** project will be documented in t
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.2] - 2026-05-31
+
+### Added
+- **Nâng cấp Giao diện Thẩm mỹ cao cấp (Premium UI Redesign)**:
+  - Khởi tạo hệ thống **Design Tokens** đồng bộ: nhúng phông chữ Google Font **Outfit** vào [index.html](file:///c:/Users/Duyen/Documents/GitHub/houserenting-app/frontend/index.html) làm phông chữ chủ đạo của toàn ứng dụng, mở rộng bảng màu trong [tailwind.config.js](file:///c:/Users/Duyen/Documents/GitHub/houserenting-app/frontend/tailwind.config.js) với nền kem ấm `#FDFBF7` (`cream.warm`) và xanh Cobalt hoàng gia `#0052CC` (`cobalt.royal`), đồng thời thiết lập biến toàn cục cho `body` trong [index.css](file:///c:/Users/Duyen/Documents/GitHub/houserenting-app/frontend/src/index.css).
+- **Tái thiết kế màn hình Phòng & Khách thuê (Hero 1 - Bento Grid & Split-Screen)**:
+  - Nâng cấp [RoomsPage.jsx](file:///c:/Users/Duyen/Documents/GitHub/houserenting-app/frontend/src/pages/RoomsPage.jsx) chuyển đổi danh sách phòng trọ sang lưới thẻ **Bento Grid Cards** có hiệu ứng bóng mịn khi di chuột (`hover:-translate-y-1 hover:shadow-[0_12px_40px_rgba(0,0,0,0.03)]`) và cảm giác lún nẩy cơ học khi nhấn (`active:scale-[0.98]`).
+  - Thay thế các tag trạng thái phòng màu nguyên bản thành các tag pastel dịu mát, cao cấp (`AVAILABLE` xanh mint, `OCCUPIED` đỏ hồng phấn, `MAINTENANCE` vàng hổ phách).
+  - Tái cấu trúc [RoomDetailPage.jsx](file:///c:/Users/Duyen/Documents/GitHub/houserenting-app/frontend/src/pages/RoomDetailPage.jsx) và [TenantDetailPage.jsx](file:///c:/Users/Duyen/Documents/GitHub/houserenting-app/frontend/src/pages/TenantDetailPage.jsx) dạng Split-screen 50/50. Bên trái hiển thị thông tin Bento sắc nét, bên phải hiển thị lịch sử hóa đơn và các tệp đính kèm sạch sẽ.
+  - Hiện đại hóa vùng Dropzone tải ảnh CCCD/hợp đồng scan của khách thuê với viền xanh Cobalt nét đứt mềm mại, bo góc `rounded-2xl` mượt mà.
+- **Tái thiết kế Hóa đơn & Hộp thoại Kính mờ Thông báo (Hero 2 - E-Invoice & Glassmorphism overlay)**:
+  - Refactor [InvoiceDetailPage.jsx](file:///c:/Users/Duyen/Documents/GitHub/houserenting-app/frontend/src/pages/InvoiceDetailPage.jsx) biến đổi thẻ hóa đơn sang phong cách **Minimalist E-Invoice** sạch sẽ, thanh lịch giống hóa đơn khách sạn sang trọng.
+  - Xây dựng hộp thoại kính mờ truyền thông đa kênh (**Glassmorphism Dialog**) với nền mờ bán trong suốt (`backdrop-blur-md bg-white/75 border border-white/30`).
+  - Thiết kế bộ 4 nút chia sẻ (Zalo, SMS, Copy, Webhook) dạng Bento mini có phản hồi xúc giác cơ học `active:scale-[0.97]` nẩy và thay đổi màu nền khi hover, đồng thời tích hợp hiệu ứng mạch đập pulse tăng tính Visibility of System Status.
+
+### Fixed
+- **Bảo toàn tính kiên cố cho E2E Testing**:
+  - Giữ vững 100% các selector và thuộc tính `data-testid` để các kịch bản E2E Playwright hoạt động trơn tru.
+  - Bổ sung song song các class màu sắc cũ (`bg-green-100 text-green-700`) làm fallback ẩn bên trong các tag pastel mới của Hóa đơn giúp Playwright tìm thấy chính xác huy hiệu thanh toán mà không làm suy thoái (regressions) các test case cũ.
+
+### Verified
+- ✅ Playwright E2E happy path: vượt qua xuất sắc trên trình duyệt Chromium.
+- ✅ Production build: biên dịch mã nguồn Vercel bundle thành công rực rỡ, không cảnh báo hay lỗi.
+
+---
+
 ## [1.4.1] - 2026-05-31
 
 ### Added

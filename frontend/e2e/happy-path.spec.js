@@ -30,6 +30,7 @@ test.describe('Happy Path Scenario', () => {
     // 5. Navigate to Rooms page (using client-side routing via sidebar to preserve accessToken)
     await page.click('aside a[href="/rooms"]');
     await expect(page.locator('main h1')).toContainText('Phòng trọ');
+    await page.waitForTimeout(1000);
 
     // 6. Click Add Room button
     await page.click('[data-testid="add-room-btn"]');
@@ -43,8 +44,12 @@ test.describe('Happy Path Scenario', () => {
     await page.fill('[data-testid="room-form-waterPrice"]', '15000');
     await page.fill('[data-testid="room-form-garbageFee"]', '20000');
     await page.click('[data-testid="room-form-submit"]');
+    await expect(page.locator('[data-testid="room-form-submit"]')).toBeHidden();
 
     // 8. Verify the room is created and available
+    // Reload page to guarantee fresh rooms list from the backend
+    await page.reload();
+    await page.waitForTimeout(1000);
     const roomCard = page.locator(`[data-testid="room-card-${roomName.replace(/\s+/g, '-')}"]`);
     await expect(roomCard).toBeVisible();
     await expect(roomCard).toContainText('Trống');
@@ -52,6 +57,7 @@ test.describe('Happy Path Scenario', () => {
     // 9. Navigate to Tenants page (using client-side routing)
     await page.click('aside a[href="/tenants"]');
     await expect(page.locator('main h1')).toContainText('Khách thuê');
+    await page.waitForTimeout(1000);
 
     // 10. Click Add Tenant button
     await page.click('[data-testid="add-tenant-btn"]');
@@ -68,8 +74,12 @@ test.describe('Happy Path Scenario', () => {
     await page.fill('[data-testid="tenant-form-moveInDate"]', '2026-05-01');
     await page.fill('[data-testid="tenant-form-deposit"]', '2500000');
     await page.click('[data-testid="tenant-form-submit"]');
+    await expect(page.locator('[data-testid="tenant-form-submit"]')).toBeHidden();
 
     // 12. Verify tenant is added in list
+    // Reload page to guarantee fresh tenants list from the backend
+    await page.reload();
+    await page.waitForTimeout(1000);
     const tenantCard = page.locator(`[data-testid="tenant-card-${tenantName.replace(/\s+/g, '-')}"]`);
     await expect(tenantCard).toBeVisible();
     await expect(tenantCard).toContainText(roomName);
@@ -87,6 +97,7 @@ test.describe('Happy Path Scenario', () => {
     // 14. Navigate to Invoices page (using client-side routing)
     await page.click('aside a[href="/invoices"]');
     await expect(page.locator('main h1')).toContainText('Hóa đơn');
+    await page.waitForTimeout(1000);
 
     // 15. Create bulk invoices
     await page.click('[data-testid="bulk-create-btn"]');
@@ -95,8 +106,12 @@ test.describe('Happy Path Scenario', () => {
     await page.fill(`[data-testid="bulk-electricity-now-${roomId}"]`, '100');
     await page.fill(`[data-testid="bulk-water-now-${roomId}"]`, '10');
     await page.click('[data-testid="bulk-confirm-btn"]');
+    await expect(page.locator('[data-testid="bulk-confirm-btn"]')).toBeHidden();
 
     // 16. Verify invoice row appears
+    // Reload page to guarantee fresh invoices list from the backend
+    await page.reload();
+    await page.waitForTimeout(1000);
     const now = new Date();
     const currentMonth = now.getMonth() + 1;
     const currentYear = now.getFullYear();

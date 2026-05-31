@@ -13,10 +13,15 @@ app.use(cors({ origin: process.env.CLIENT_URL || '*', credentials: true }));
 app.use(express.json());
 app.use((req, res, next) => {
   console.log(`[API] ${req.method} ${req.originalUrl}`);
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
   res.on('finish', () => console.log(`[API]   -> ${res.statusCode}`));
   next();
 });
-app.use(rateLimit({ windowMs: 15 * 60 * 1000, max: 100, standardHeaders: true, legacyHeaders: false }));
+if (process.env.NODE_ENV !== 'development' && process.env.NODE_ENV !== 'test') {
+  app.use(rateLimit({ windowMs: 15 * 60 * 1000, max: 100, standardHeaders: true, legacyHeaders: false }));
+}
 
 // Health check (public — dùng cho keep-alive ping)
 app.get('/api/health', (req, res) => res.json({ status: 'ok', timestamp: new Date().toISOString() }));

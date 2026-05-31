@@ -41,7 +41,9 @@ function TenantForm({ onClose, initialData }) {
     onSuccess: () => { 
       toast.success(initialData ? 'Cập nhật khách thuê thành công!' : 'Thêm khách thuê thành công!'); 
       qc.invalidateQueries({ queryKey: ['tenants'] }); 
+      qc.refetchQueries({ queryKey: ['tenants'] }); 
       qc.invalidateQueries({ queryKey: ['rooms'] }); 
+      qc.refetchQueries({ queryKey: ['rooms'] }); 
       onClose(); 
     },
     onError: (e) => toast.error(e.response?.data?.message || 'Lỗi lưu khách'),
@@ -141,86 +143,88 @@ export default function TenantsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Khách thuê</h1>
-          <p className="text-sm text-muted-foreground mt-1">{tenants.length} khách</p>
+          <h1 className="text-2xl font-bold text-slate-900">Khách thuê</h1>
+          <p className="text-sm text-slate-500 mt-1">{tenants.length} khách thuê</p>
         </div>
         <div className="flex items-center gap-3">
-          <select value={filter} onChange={(e) => setFilter(e.target.value)} className="px-3 py-2 border rounded-lg text-sm focus:outline-none">
+          <select value={filter} onChange={(e) => setFilter(e.target.value)} className="px-3.5 py-2 border border-slate-100 rounded-xl text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-blue-100">
             <option value="true">Đang thuê</option>
             <option value="false">Đã rời đi</option>
           </select>
-          <button onClick={() => setShowForm(true)} data-testid="add-tenant-btn" className="flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-lg text-sm font-medium hover:bg-primary/90 shadow-sm">
+          <button onClick={() => setShowForm(true)} data-testid="add-tenant-btn" className="flex items-center gap-2 bg-cobalt-royal text-white px-5 py-2.5 rounded-xl text-sm font-semibold hover:-translate-y-0.5 active:scale-[0.98] transition-all duration-200 shadow-[0_4px_12px_rgba(0,82,204,0.15)]">
             <Plus size={16} /> Thêm khách
           </button>
         </div>
       </div>
 
       {isLoading ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {[...Array(6)].map((_, i) => <SkeletonCard key={i} />)}
         </div>
       ) : tenants.length === 0 ? (
-        <div className="text-center py-20 text-muted-foreground">
-          <Users size={48} className="mx-auto mb-4 opacity-30" />
-          <p>Không có khách thuê nào</p>
+        <div className="text-center py-20 text-slate-400 bg-white rounded-2xl border border-slate-100 p-8">
+          <Users size={48} className="mx-auto mb-4 opacity-30 text-cobalt-royal" />
+          <p className="font-medium text-sm">Không có khách thuê nào</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {tenants.map((t) => (
-            <div key={t.id} data-testid={`tenant-card-${t.name.replace(/\s+/g, '-')}`} className="bg-white rounded-xl border shadow-sm hover:shadow-md hover:scale-[1.015] hover:border-primary/20 transition-all duration-300 ease-in-out p-5 flex flex-col">
-              <div className="flex items-start justify-between mb-3">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-lg">
-                    {t.name.charAt(0).toUpperCase()}
+            <div key={t.id} data-testid={`tenant-card-${t.name.replace(/\s+/g, '-')}`} className="bg-white rounded-2xl border border-slate-100 hover:border-blue-100 hover:-translate-y-1 hover:shadow-[0_12px_40px_rgba(0,0,0,0.03)] active:scale-[0.99] transition-all duration-300 ease-in-out p-6 flex flex-col justify-between">
+              <div>
+                <div className="flex items-start justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-blue-50 text-cobalt-royal font-bold text-base flex items-center justify-center border border-blue-100">
+                      {t.name.charAt(0).toUpperCase()}
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-slate-800 text-base leading-tight">{t.name}</h3>
+                      <Link to={`/rooms/${t.room?.id}`} className="text-xs text-cobalt-royal hover:underline font-semibold mt-1 inline-block">
+                        {t.room?.name}
+                      </Link>
+                    </div>
                   </div>
-                  <div>
-                    <h3 className="font-semibold text-base leading-tight">{t.name}</h3>
-                    <Link to={`/rooms/${t.room?.id}`} className="text-xs text-primary hover:underline">
-                      {t.room?.name}
-                    </Link>
+                  <span className={`text-[10px] px-2.5 py-0.5 rounded-full font-bold border ${t.active ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-slate-50 text-slate-500 border-slate-100'}`}>
+                    {t.active ? 'Đang thuê' : 'Đã rời đi'}
+                  </span>
+                </div>
+                
+                <div className="space-y-2 text-sm mt-4">
+                  <div className="flex items-center gap-2 text-slate-500 font-medium">
+                    <Phone size={14} className="text-slate-400" />
+                    <span>{t.phone}</span>
                   </div>
-                </div>
-                <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${t.active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                  {t.active ? 'Đang thuê' : 'Đã rời đi'}
-                </span>
-              </div>
-              
-              <div className="flex-1 space-y-2 text-sm mt-2">
-                <div className="flex items-center gap-2 text-muted-foreground">
-                  <Phone size={14} />
-                  <span>{t.phone}</span>
-                </div>
-                <div className="flex items-center gap-2 text-muted-foreground">
-                  <Calendar size={14} />
-                  <span>Vào ở: {formatDate(t.moveInDate)}</span>
-                </div>
-                <div className="flex items-center justify-between pt-2 border-t mt-3">
-                  <span className="text-muted-foreground text-xs">Tiền cọc</span>
-                  <span className="font-medium">{formatCurrency(t.deposit)}</span>
+                  <div className="flex items-center gap-2 text-slate-500 font-medium">
+                    <Calendar size={14} className="text-slate-400" />
+                    <span>Vào ở: {formatDate(t.moveInDate)}</span>
+                  </div>
+                  <div className="bg-slate-50 border border-slate-100/50 rounded-xl p-3 flex justify-between items-center mt-4">
+                    <span className="text-slate-400 text-xs font-bold uppercase tracking-wider">Tiền cọc</span>
+                    <span className="font-extrabold text-slate-800 text-sm">{formatCurrency(t.deposit)}</span>
+                  </div>
                 </div>
               </div>
 
-              <div className="flex gap-2 mt-4 pt-4 border-t">
-                <Link to={`/tenants/${t.id}`} data-testid={`tenant-view-detail-${t.id}`} className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 border rounded-lg text-xs font-medium hover:bg-gray-50 transition-colors">
+              <div className="flex flex-wrap gap-2 mt-6 pt-4 border-t border-slate-100">
+                <Link to={`/tenants/${t.id}`} data-testid={`tenant-view-detail-${t.id}`} className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 border border-slate-100 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-50 hover:text-slate-800 active:scale-[0.98] transition-all duration-200">
                   <Eye size={13} /> Chi tiết
                 </Link>
                 <button onClick={() => handleEdit(t)}
-                  className="px-3 py-2 border rounded-lg text-xs font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+                  className="px-3 py-2 border border-slate-100 rounded-xl text-xs font-medium text-slate-500 hover:bg-slate-50 hover:text-slate-700 active:scale-[0.98] transition-all duration-200">
                   <Edit2 size={13} />
                 </button>
                 {t.active && (
                   <button onClick={() => { if (confirm(`Xác nhận chuyển ${t.name} rời khỏi phòng ${t.room?.name || ''}?`)) moveOut(t.id); }}
                     data-testid={`tenant-checkout-${t.id}`}
-                    className="px-3 py-2 border border-orange-200 rounded-lg text-xs font-medium text-orange-600 hover:bg-orange-50 transition-colors">
+                    className="px-3 py-2 border border-orange-100 rounded-xl text-xs font-medium text-orange-600 hover:bg-orange-50/50 active:scale-[0.98] transition-all duration-200 flex items-center gap-1">
                     <UserX size={13} />
-                    <span className="ml-1">Chuyển ra</span>
+                    <span>Chuyển ra</span>
                   </button>
                 )}
                 <button onClick={() => { if (confirm(`Xác nhận xóa hoàn toàn khách ${t.name}?`)) deleteTenant(t.id); }}
                   data-testid={`tenant-delete-${t.id}`}
-                  className="px-3 py-2 border border-red-200 rounded-lg text-xs font-medium text-red-600 hover:bg-red-50 transition-colors">
+                  className="px-3 py-2 border border-red-100 rounded-xl text-xs font-medium text-red-600 hover:bg-red-50/50 active:scale-[0.98] transition-all duration-200 flex items-center gap-1">
                   <Trash2 size={13} />
-                  <span className="ml-1">Xóa</span>
+                  <span>Xóa</span>
                 </button>
               </div>
             </div>
@@ -228,7 +232,7 @@ export default function TenantsPage() {
         </div>
       )}
 
-      {showForm && <TenantForm initialData={editingTenant} onClose={() => { handleCloseForm(); refetch(); }} />}
+      {showForm && <TenantForm initialData={editingTenant} onClose={handleCloseForm} />}
     </div>
   );
 }
