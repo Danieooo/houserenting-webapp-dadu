@@ -1,7 +1,7 @@
 import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { getRoomApi } from '../services/api';
-import { formatCurrency, formatDate, ROOM_STATUS_LABELS, ROOM_STATUS_COLORS } from '../lib/utils';
+import { formatCurrency, formatDate, ROOM_STATUS_LABELS } from '../lib/utils';
 import { ArrowLeft, FileText } from 'lucide-react';
 
 import { SkeletonDetail } from '../components/Skeleton';
@@ -65,7 +65,8 @@ export default function RoomDetailPage() {
                 {room.tenants?.map((t) => (
                   <Link key={t.id} to={`/tenants/${t.id}`} className="block p-4 rounded-xl border border-slate-100 hover:border-emerald-100 hover:bg-emerald-50/10 active:scale-[0.98] transition-all duration-200">
                     <p className="font-bold text-slate-800 text-sm">{t.name}</p>
-                    <p className="text-xs text-slate-400 mt-1">📞 {t.phone}</p>
+                    <p className="text-xs text-slate-400 mt-1">📞 {t.phone || 'Chưa có số điện thoại'}</p>
+                    <p className="text-xs text-slate-400 mt-1">Zalo: {t.zaloContact || 'Chưa có liên hệ Zalo'}</p>
                   </Link>
                 ))}
               </div>

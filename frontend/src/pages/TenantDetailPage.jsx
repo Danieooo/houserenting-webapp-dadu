@@ -15,7 +15,7 @@ export default function TenantDetailPage() {
   const { data, isLoading } = useQuery({ queryKey: ['tenant', id], queryFn: () => getTenantApi(id) });
   const tenant = data?.data?.data;
 
-  const { mutate: moveOutTenant, isLoading: movingOut } = useMutation({
+  const { mutate: moveOutTenant, isPending: movingOut } = useMutation({
     mutationFn: () => moveOutTenantApi(id),
     onSuccess: () => {
       toast.success('Khách đã được chuyển sang phần đã rời đi');
@@ -26,7 +26,7 @@ export default function TenantDetailPage() {
     onError: (e) => toast.error(e.response?.data?.message || 'Lỗi chuyển khách ra'),
   });
 
-  const { mutate: deleteTenant, isLoading: deletingTenant } = useMutation({
+  const { mutate: deleteTenant, isPending: deletingTenant } = useMutation({
     mutationFn: () => deleteTenantApi(id),
     onSuccess: () => {
       toast.success('Khách đã được xóa hoàn toàn');
@@ -111,8 +111,9 @@ export default function TenantDetailPage() {
           <h2 className="font-bold text-slate-800 text-base">Thông tin cá nhân</h2>
           <div className="grid grid-cols-2 gap-3">
             {[
-              ['Số điện thoại', tenant.phone],
-              ['CCCD/CMND', tenant.idCard || '-'],
+              ['Số điện thoại', tenant.phone || 'Chưa cập nhật'],
+              ['Liên hệ Zalo', tenant.zaloContact || 'Chưa cập nhật'],
+              ['CCCD/CMND', tenant.idCard || 'Chưa cập nhật'],
               ['Ngày vào ở', formatDate(tenant.moveInDate)],
               ['Ngày kết thúc', tenant.moveOutDate ? formatDate(tenant.moveOutDate) : 'Chưa xác định'],
               ['Tiền cọc', formatCurrency(tenant.deposit)],

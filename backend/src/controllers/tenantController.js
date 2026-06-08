@@ -1,6 +1,22 @@
 const prisma = require('../config/db');
 const multer = require('multer');
 const { uploadToCloudinary, deleteFromCloudinary } = require('../services/cloudinaryService');
+const { buildTenantContactPayload } = require('../utils/tenantContact');
+
+function getTenantContactPayloadOrThrow(phone, zaloContact) {
+  try {
+    return buildTenantContactPayload({ phone, zaloContact });
+  } catch (error) {
+    if (error instanceof TypeError) {
+      const validationError = new Error('Thông tin liên hệ không hợp lệ');
+      validationError.status = 400;
+      validationError.code = 'VALIDATION_ERROR';
+      throw validationError;
+    }
+
+    throw error;
+  }
+}
 
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -45,8 +61,8 @@ exports.getTenant = async (req, res, next) => {
 
 exports.createTenant = async (req, res, next) => {
   try {
-    const { name, phone, idCard, roomId, moveInDate, moveOutDate, deposit } = req.body;
-    if (!name || !phone || !roomId || !moveInDate) {
+    const { name, phone, zaloContact, idCard, roomId, moveInDate, moveOutDate, deposit } = req.body;
+    if (!name || !roomId || !moveInDate) {
       return res.status(400).json({ success: false, message: 'Thiếu thông tin bắt buộc', code: 'VALIDATION_ERROR' });
     }
     const room = await prisma.room.findFirst({ where: { id: Number(roomId), userId: req.user.id } });
@@ -54,10 +70,12 @@ exports.createTenant = async (req, res, next) => {
     if (room.status === 'MAINTENANCE') {
       return res.status(400).json({ success: false, message: 'Phòng đang bảo trì, không thể thêm khách thuê', code: 'ROOM_MAINTENANCE' });
     }
+
+    const contactPayload = getTenantContactPayloadOrThrow(phone, zaloContact);
     const tenant = await prisma.tenant.create({
       data: {
         name,
-        phone,
+        ...contactPayload,
         idCard: idCard || null,
         roomId: Number(roomId),
         moveInDate: new Date(moveInDate),
@@ -77,12 +95,14 @@ exports.updateTenant = async (req, res, next) => {
     });
     if (!tenant) return res.status(404).json({ success: false, message: 'Khách thuê không tồn tại', code: 'TENANT_NOT_FOUND' });
 
-    const { name, phone, idCard, moveInDate, moveOutDate, deposit } = req.body;
+    const { name, phone, zaloContact, idCard, moveInDate, moveOutDate, deposit } = req.body;
+    const contactPayload = getTenantContactPayloadOrThrow(phone, zaloContact);
     const updated = await prisma.tenant.update({
       where: { id: tenant.id },
       data: {
-        ...(name && { name }),
-        ...(phone && { phone }),
+        ...(name !== undefined && { name }),
+        ...(phone !== undefined && { phone: contactPayload.phone }),
+        ...(zaloContact !== undefined && { zaloContact: contactPayload.zaloContact }),
         idCard: idCard !== undefined ? idCard : undefined,
         ...(moveInDate && { moveInDate: new Date(moveInDate) }),
         moveOutDate: moveOutDate !== undefined ? (moveOutDate ? new Date(moveOutDate) : null) : undefined,

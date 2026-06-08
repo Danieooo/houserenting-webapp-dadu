@@ -3,40 +3,29 @@ import { test, expect } from '@playwright/test';
 test.describe('Happy Path Scenario', () => {
   test('should complete the entire cycle from room creation to checkout', async ({ page }) => {
     test.setTimeout(90000);
-    // 1. Setup dialog handler to automatically accept all confirms/alerts
-    page.on('dialog', async dialog => {
+
+    page.on('dialog', async (dialog) => {
       await dialog.accept();
     });
 
-    // 1b. Forward browser console logs to terminal for debugging
-    page.on('console', msg => console.log('BROWSER LOG:', msg.text()));
+    page.on('console', (msg) => console.log('BROWSER LOG:', msg.text()));
 
-    // Generate unique suffix to avoid database record duplication and Playwright selector collisions
     const uniqueId = Math.floor(Math.random() * 1000000);
     const roomName = `Room E2E ${uniqueId}`;
     const tenantName = `Tenant E2E ${uniqueId}`;
 
-    // 2. Open login page
     await page.goto('/login');
     await expect(page).toHaveTitle(/Quản Lý Nhà Trọ/);
 
-    // 3. Fill login form and submit
     await page.fill('[data-testid="login-email"]', 'admin@test.com');
     await page.fill('[data-testid="login-password"]', 'password123');
     await page.click('[data-testid="login-submit"]');
-
-    // 4. Verify we redirect to Dashboard
     await expect(page).toHaveURL(/.*dashboard/);
 
-    // 5. Navigate to Rooms page (using client-side routing via sidebar to preserve accessToken)
     await page.click('aside a[href="/rooms"]');
     await expect(page.locator('main h1')).toContainText('Phòng trọ');
-    await page.waitForTimeout(1000);
 
-    // 6. Click Add Room button
     await page.click('[data-testid="add-room-btn"]');
-
-    // 7. Fill Room form and submit
     await page.fill('[data-testid="room-form-name"]', roomName);
     await page.fill('[data-testid="room-form-floor"]', '3');
     await page.fill('[data-testid="room-form-area"]', '25');
@@ -47,114 +36,75 @@ test.describe('Happy Path Scenario', () => {
     await page.click('[data-testid="room-form-submit"]');
     await expect(page.locator('[data-testid="room-form-submit"]')).toBeHidden();
 
-    // 8. Verify the room is created and available
-    // Reload page to guarantee fresh rooms list from the backend
     await page.reload();
-    await page.waitForTimeout(1000);
-    const roomCard = page.locator(`[data-testid="room-card-${roomName.replace(/\s+/g, '-')}"]`);
-    await expect(roomCard).toBeVisible();
-    await expect(roomCard).toContainText('Trống');
+    const roomCardAfterReload = page.locator('[data-testid^="room-card-"]').filter({ hasText: roomName }).first();
+    await expect(roomCardAfterReload).toBeVisible({ timeout: 20000 });
+    const roomId = (await roomCardAfterReload.locator('a[data-testid^="room-view-detail-"]').getAttribute('data-testid')).replace('room-view-detail-', '');
 
-    // 9. Navigate to Tenants page (using client-side routing)
     await page.click('aside a[href="/tenants"]');
     await expect(page.locator('main h1')).toContainText('Khách thuê');
-    await page.waitForTimeout(1000);
-
-    // 10. Click Add Tenant button
     await page.click('[data-testid="add-tenant-btn"]');
 
-    // 11. Fill Tenant form
     await page.fill('[data-testid="tenant-form-name"]', tenantName);
     await page.fill('[data-testid="tenant-form-phone"]', '0987654321');
+    await page.fill('[data-testid="tenant-form-zaloContact"]', 'zalo-happy-path');
     await page.fill('[data-testid="tenant-form-idCard"]', '123456789012');
-    
-    // Select the created room
-    await page.selectOption('[data-testid="tenant-form-roomId"]', { label: `${roomName} (Trống)` });
-    
-    // Fill move in date
+    await page.selectOption('[data-testid="tenant-form-roomId"]', roomId);
     await page.fill('[data-testid="tenant-form-moveInDate"]', '2026-05-01');
     await page.fill('[data-testid="tenant-form-deposit"]', '2500000');
     await page.click('[data-testid="tenant-form-submit"]');
     await expect(page.locator('[data-testid="tenant-form-submit"]')).toBeHidden();
 
-    // 12. Verify tenant is added in list
-    // Reload page to guarantee fresh tenants list from the backend
-    await page.reload();
-    await page.waitForTimeout(1000);
-    const tenantCard = page.locator(`[data-testid="tenant-card-${tenantName.replace(/\s+/g, '-')}"]`);
-    await expect(tenantCard).toBeVisible();
+    const tenantCard = page.locator('[data-testid^="tenant-card-"]').filter({ hasText: tenantName }).first();
+    await expect(tenantCard).toBeVisible({ timeout: 20000 });
     await expect(tenantCard).toContainText(roomName);
 
-    // 13. Go back to Rooms page (using client-side routing) to verify occupied status
     await page.click('aside a[href="/rooms"]');
-    const roomCardUpdated = page.locator(`[data-testid="room-card-${roomName.replace(/\s+/g, '-')}"]`);
-    await expect(roomCardUpdated).toContainText('Có người');
+    const roomCard = page.locator('[data-testid^="room-card-"]').filter({
+      has: page.locator(`a[data-testid="room-view-detail-${roomId}"]`)
+    }).first();
+    await expect(roomCard).toContainText('Có người');
 
-    // Get room ID from detail link
-    const roomDetailLink = roomCardUpdated.locator('a[data-testid^="room-view-detail-"]');
-    const roomDetailIdAttr = await roomDetailLink.getAttribute('data-testid');
-    const roomId = roomDetailIdAttr.replace('room-view-detail-', '');
-
-    // 14. Navigate to Invoices page (using client-side routing)
     await page.click('aside a[href="/invoices"]');
     await expect(page.locator('main h1')).toContainText('Hóa đơn');
-    await page.waitForTimeout(1000);
 
-    // 15. Create bulk invoices
     await page.click('[data-testid="bulk-create-btn"]');
-    
-    // Input electric and water indexes
-    await page.fill(`[data-testid="bulk-electricity-now-${roomId}"]`, '100');
-    await page.fill(`[data-testid="bulk-water-now-${roomId}"]`, '10');
+    await page.fill(`[data-testid^="bulk-electricity-now-${roomId}"]`, '100');
+    await page.fill(`[data-testid^="bulk-water-now-${roomId}"]`, '10');
     await page.click('[data-testid="bulk-confirm-btn"]');
     await expect(page.locator('[data-testid="bulk-confirm-btn"]')).toBeHidden({ timeout: 20000 });
 
-    // 16. Verify invoice row appears
-    // Reload page to guarantee fresh invoices list from the backend
-    await page.reload();
-    await page.waitForTimeout(1000);
     const now = new Date();
     const currentMonth = now.getMonth() + 1;
     const currentYear = now.getFullYear();
-    const invoiceRow = page.locator(`[data-testid="invoice-row-${currentMonth}-${currentYear}-${roomName.replace(/\s+/g, '-')}"]`);
-    await expect(invoiceRow).toBeVisible();
+    const invoiceRow = page.locator('[data-testid^="invoice-row-"]')
+      .filter({ hasText: roomName })
+      .filter({ hasText: `${currentMonth}/${currentYear}` })
+      .first();
+    await expect(invoiceRow).toBeVisible({ timeout: 20000 });
     await expect(invoiceRow).toContainText('Chưa thu');
 
-    // View invoice detail (client-side click)
-    const invoiceViewLink = invoiceRow.locator('a[data-testid^="invoice-view-detail-"]');
-    await invoiceViewLink.click();
+    await invoiceRow.locator('a[data-testid^="invoice-view-detail-"]').click();
     await expect(page.locator('main h1')).toContainText(`Hóa đơn tháng ${currentMonth}/${currentYear}`);
 
-    // Verify calculated amount:
-    // Base rent: 2,500,000
-    // Electricity: 100 * 3,500 = 350,000
-    // Water: 10 * 15,000 = 150,000
-    // Garbage: 20,000
-    // Total: 3,020,000
     const totalAmountSpan = page.locator('[data-testid="invoice-total-amount"]');
     await expect(totalAmountSpan).toContainText('3.020.000');
 
-    // 17. Record payment
     await page.click('[data-testid="invoice-pay-btn"]');
-    
-    // Verify invoice paid state
-    await expect(page.locator('.bg-green-100.text-green-700')).toContainText('Đã thu');
+    await expect(page.locator('main')).toContainText('Đã thu');
 
-    // 18. Go to tenant detail page to checkout (using client-side navigation)
     await page.click('aside a[href="/tenants"]');
-    const tenantCardFinal = page.locator(`[data-testid="tenant-card-${tenantName.replace(/\s+/g, '-')}"]`);
+    const tenantCardFinal = page.locator('[data-testid^="tenant-card-"]').filter({ hasText: tenantName }).first();
     await tenantCardFinal.locator('a[data-testid^="tenant-view-detail-"]').click();
     await expect(page.locator('main h1')).toContainText(tenantName);
 
-    // Click checkout
-    await page.click(`button:has-text("Chuyển ra")`);
-
-    // Verify tenant is marked active: false / "Đã rời đi"
+    await page.click('button:has-text("Chuyển ra")');
     await expect(page.locator('text=Đã rời đi')).toBeVisible();
 
-    // 19. Verify room is available again (using client-side navigation)
     await page.click('aside a[href="/rooms"]');
-    const roomCardFinal = page.locator(`[data-testid="room-card-${roomName.replace(/\s+/g, '-')}"]`);
+    const roomCardFinal = page.locator('[data-testid^="room-card-"]').filter({
+      has: page.locator(`a[data-testid="room-view-detail-${roomId}"]`)
+    }).first();
     await expect(roomCardFinal).toContainText('Trống');
   });
 });

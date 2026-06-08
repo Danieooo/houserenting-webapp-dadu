@@ -67,7 +67,8 @@ model Room {
 model Tenant {
   id          Int          @id @default(autoincrement())
   name        String
-  phone       String
+  phone       String       @default("")
+  zaloContact String       @default("")
   idCard      String?
   roomId      Int
   room        Room         @relation(fields: [roomId], references: [id])

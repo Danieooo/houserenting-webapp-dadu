@@ -2,9 +2,29 @@ import { useParams, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { getInvoiceApi, updateInvoiceApi, markInvoicePaidApi, getInvoicePdfApi, getSettingsApi, notifyInvoiceApi } from '../services/api';
+import {
+  getInvoiceApi,
+  updateInvoiceApi,
+  markInvoicePaidApi,
+  getInvoicePdfApi,
+  getSettingsApi,
+  notifyInvoiceApi,
+} from '../services/api';
 import { formatCurrency, formatDate } from '../lib/utils';
-import { ArrowLeft, Download, CheckCircle2, Edit2, Save, X, Send, MessageSquare, Share2, Copy, Check, Bell } from 'lucide-react';
+import {
+  ArrowLeft,
+  Download,
+  CheckCircle2,
+  Edit2,
+  Save,
+  X,
+  Send,
+  MessageSquare,
+  Share2,
+  Copy,
+  Check,
+  Bell,
+} from 'lucide-react';
 import { SkeletonDetail } from '../components/Skeleton';
 
 export default function InvoiceDetailPage() {
@@ -32,11 +52,22 @@ export default function InvoiceDetailPage() {
     queryFn: () => getInvoiceApi(id),
     onSuccess: (res) => {
       const inv = res.data.data;
-      setForm({ electricityNow: inv.electricityNow, waterNow: inv.waterNow, otherFees: inv.otherFees, otherNote: inv.otherNote || '', note: inv.note || '' });
-    }
+      setForm({
+        electricityNow: inv.electricityNow,
+        waterNow: inv.waterNow,
+        otherFees: inv.otherFees,
+        otherNote: inv.otherNote || '',
+        note: inv.note || '',
+      });
+    },
   });
 
   const invoice = data?.data?.data;
+  const tenantPhone = invoice?.tenant?.phone?.trim() || '';
+  const tenantZaloContact = invoice?.tenant?.zaloContact?.trim() || '';
+  const hasTenantPhone = Boolean(tenantPhone);
+  const hasTenantZaloContact = Boolean(tenantZaloContact);
+  const disableZaloAction = !hasTenantPhone && !hasTenantZaloContact;
 
   const buildMessageText = () => {
     if (!invoice) return '';
@@ -61,27 +92,52 @@ ${invoice.otherFees > 0 ? `- *Phí khác (${invoice.otherNote || 'Không có'}):
 🏦 ${paymentInfo}`;
   };
 
+  const markCopied = () => {
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
   const handleCopyText = async () => {
     try {
       await navigator.clipboard.writeText(buildMessageText());
-      setCopied(true);
+      markCopied();
       toast.success('Đã sao chép nội dung tin nhắn!');
-      setTimeout(() => setCopied(false), 2000);
     } catch {
       toast.error('Lỗi sao chép');
     }
   };
 
   const handleSendZalo = async () => {
-    await navigator.clipboard.writeText(buildMessageText());
-    toast.success('Đã sao chép! Đang mở Zalo...');
-    window.open(`https://zalo.me/${invoice?.tenant?.phone}`, '_blank');
+    try {
+      await navigator.clipboard.writeText(buildMessageText());
+      markCopied();
+
+      if (hasTenantPhone) {
+        toast.success('Đã sao chép nội dung, đang mở chat Zalo...');
+        window.open(`https://zalo.me/${tenantPhone}`, '_blank');
+        return;
+      }
+
+      if (hasTenantZaloContact) {
+        toast.success('Đã sao chép nội dung. Hãy dùng thông tin Liên hệ Zalo để mở đúng cuộc trò chuyện.');
+        return;
+      }
+
+      toast.success('Đã sao chép nội dung tin nhắn.');
+    } catch {
+      toast.error('Lỗi sao chép');
+    }
   };
 
   const handleSendSMS = () => {
+    if (!hasTenantPhone) {
+      toast.error('Khách thuê chưa có số điện thoại để mở SMS.');
+      return;
+    }
+
     const text = buildMessageText().replace(/\*/g, '');
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-    const smsUrl = `sms:${invoice?.tenant?.phone}${isIOS ? '&' : '?'}body=${encodeURIComponent(text)}`;
+    const smsUrl = `sms:${tenantPhone}${isIOS ? '&' : '?'}body=${encodeURIComponent(text)}`;
     window.open(smsUrl, '_blank');
   };
 
@@ -91,7 +147,7 @@ ${invoice.otherFees > 0 ? `- *Phí khác (${invoice.otherNote || 'Không có'}):
       try {
         await navigator.share({
           title: `Hóa đơn phòng ${invoice?.room?.name}`,
-          text: text,
+          text,
         });
         toast.success('Đã chia sẻ thành công!');
       } catch (err) {
@@ -105,14 +161,21 @@ ${invoice.otherFees > 0 ? `- *Phí khác (${invoice.otherNote || 'Không có'}):
   };
 
   const { mutate: updateInv, isPending: updating } = useMutation({
-    mutationFn: (d) => updateInvoiceApi(id, d),
-    onSuccess: () => { toast.success('Cập nhật thành công!'); qc.invalidateQueries({ queryKey: ['invoice', id] }); setEditing(false); },
+    mutationFn: (payload) => updateInvoiceApi(id, payload),
+    onSuccess: () => {
+      toast.success('Cập nhật thành công!');
+      qc.invalidateQueries({ queryKey: ['invoice', id] });
+      setEditing(false);
+    },
     onError: (e) => toast.error(e.response?.data?.message || 'Lỗi cập nhật'),
   });
 
   const { mutate: markPaid, isPending: paying } = useMutation({
-    mutationFn: (d) => markInvoicePaidApi(id, d),
-    onSuccess: () => { toast.success('Đã đánh dấu thu tiền!'); qc.invalidateQueries({ queryKey: ['invoice', id] }); },
+    mutationFn: (payload) => markInvoicePaidApi(id, payload),
+    onSuccess: () => {
+      toast.success('Đã đánh dấu thu tiền!');
+      qc.invalidateQueries({ queryKey: ['invoice', id] });
+    },
     onError: (e) => toast.error(e.response?.data?.message || 'Lỗi'),
   });
 
@@ -125,7 +188,9 @@ ${invoice.otherFees > 0 ? `- *Phí khác (${invoice.otherNote || 'Không có'}):
       a.download = `hoadon-${invoice?.room?.name}-${invoice?.month}-${invoice?.year}.pdf`;
       a.click();
       URL.revokeObjectURL(url);
-    } catch { toast.error('Lỗi tải PDF'); }
+    } catch {
+      toast.error('Lỗi tải PDF');
+    }
   };
 
   if (isLoading) return <SkeletonDetail />;
@@ -138,7 +203,9 @@ ${invoice.otherFees > 0 ? `- *Phí khác (${invoice.otherNote || 'Không có'}):
     <div className="space-y-6 max-w-3xl">
       <div className="flex items-center justify-between pb-4 border-b border-slate-100">
         <div className="flex items-center gap-3">
-          <Link to="/invoices" className="text-slate-400 hover:text-slate-600 active:scale-[0.98] transition-all duration-200"><ArrowLeft size={20} /></Link>
+          <Link to="/invoices" className="text-slate-400 hover:text-slate-600 active:scale-[0.98] transition-all duration-200">
+            <ArrowLeft size={20} />
+          </Link>
           <div>
             <h1 className="text-2xl font-bold text-slate-800">Hóa đơn tháng {invoice.month}/{invoice.year}</h1>
             <p className="text-sm text-slate-500 mt-1">{invoice.room?.name} · {invoice.tenant?.name}</p>
@@ -164,9 +231,14 @@ ${invoice.otherFees > 0 ? `- *Phí khác (${invoice.otherNote || 'Không có'}):
                 <button onClick={() => setEditing(!editing)} className="flex items-center gap-1.5 px-4 py-2 border border-slate-100 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-50 active:scale-[0.98] transition-all duration-200">
                   {editing ? <><X size={13} /> Hủy</> : <><Edit2 size={13} /> Sửa</>}
                 </button>
-                <button onClick={() => { if (confirm('Đánh dấu đã thu tiền?')) markPaid({ paidAmount: invoice.totalAmount }); }}
+                <button
+                  onClick={() => {
+                    if (confirm('Đánh dấu đã thu tiền?')) markPaid({ paidAmount: invoice.totalAmount });
+                  }}
                   data-testid="invoice-pay-btn"
-                  disabled={paying} className="flex items-center gap-1.5 px-4 py-2 bg-[#E8F5E9] border border-emerald-200/50 text-[#2E7D32] rounded-xl text-xs font-bold hover:bg-emerald-100/50 active:scale-[0.98] transition-all duration-200">
+                  disabled={paying}
+                  className="flex items-center gap-1.5 px-4 py-2 bg-[#E8F5E9] border border-emerald-200/50 text-[#2E7D32] rounded-xl text-xs font-bold hover:bg-emerald-100/50 active:scale-[0.98] transition-all duration-200"
+                >
                   <CheckCircle2 size={13} /> Thu tiền
                 </button>
               </>
@@ -180,9 +252,9 @@ ${invoice.otherFees > 0 ? `- *Phí khác (${invoice.otherNote || 'Không có'}):
             [`Tiền điện (Chỉ số: ${invoice.electricityPrev} → ${editing ? '?' : invoice.electricityNow})`, `${elecUsed} kWh × ${formatCurrency(invoice.electricityPrice)}`, formatCurrency(elecUsed * invoice.electricityPrice)],
             [`Tiền nước (Chỉ số: ${invoice.waterPrev} → ${editing ? '?' : invoice.waterNow})`, `${waterUsed} m³ × ${formatCurrency(invoice.waterPrice)}`, formatCurrency(waterUsed * invoice.waterPrice)],
             ['Phí rác / vệ sinh', '-', formatCurrency(invoice.garbageFee)],
-            [`Phí dịch vụ khác${invoice.otherNote ? ' (' + invoice.otherNote + ')' : ''}`, '-', formatCurrency(invoice.otherFees)],
-          ].map(([label, sub, value], i) => (
-            <div key={i} className="flex justify-between items-center py-3.5 border-b border-dashed border-emerald-100/50 last:border-0 text-sm">
+            [`Phí dịch vụ khác${invoice.otherNote ? ` (${invoice.otherNote})` : ''}`, '-', formatCurrency(invoice.otherFees)],
+          ].map(([label, sub, value], index) => (
+            <div key={index} className="flex justify-between items-center py-3.5 border-b border-dashed border-emerald-100/50 last:border-0 text-sm">
               <div className="flex flex-col">
                 <span className="font-bold text-slate-800">{label}</span>
                 {sub && sub !== '-' && <span className="text-[10px] text-slate-400 font-semibold mt-0.5">{sub}</span>}
@@ -197,7 +269,7 @@ ${invoice.otherFees > 0 ? `- *Phí khác (${invoice.otherNote || 'Không có'}):
           </div>
 
           <div className="pt-4">
-            <span className={`inline-flex items-center gap-1.5 text-xs px-3.5 py-2 rounded-full font-bold border ${invoice.paid ? 'bg-green-100 text-green-700 bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-orange-100 text-orange-700 bg-[#FFF3E0] text-[#E65100] border-orange-200/50'}`}>
+            <span className={`inline-flex items-center gap-1.5 text-xs px-3.5 py-2 rounded-full font-bold border ${invoice.paid ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-[#FFF3E0] text-[#E65100] border-orange-200/50'}`}>
               {invoice.paid ? <><CheckCircle2 size={14} className="text-emerald-600" /> Đã thu {formatCurrency(invoice.paidAmount)} ({formatDate(invoice.paidDate)})</> : '⏳ Chưa thu tiền'}
             </span>
           </div>
@@ -215,13 +287,20 @@ ${invoice.otherFees > 0 ? `- *Phí khác (${invoice.otherNote || 'Không có'}):
               ].map(({ label, key, type }) => (
                 <div key={key} className={key === 'otherNote' ? 'col-span-2' : ''}>
                   <label className="block text-xs font-bold mb-1.5 text-slate-400 uppercase tracking-wider">{label}</label>
-                  <input type={type} value={form[key] || ''} onChange={(e) => setForm({ ...form, [key]: e.target.value })}
-                    className="w-full px-3.5 py-2 border border-slate-100 bg-white rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-50 focus:border-[#2E7D32] outline-none transition-all duration-200" />
+                  <input
+                    type={type}
+                    value={form[key] || ''}
+                    onChange={(e) => setForm({ ...form, [key]: e.target.value })}
+                    className="w-full px-3.5 py-2 border border-slate-100 bg-white rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-50 focus:border-[#2E7D32] outline-none transition-all duration-200"
+                  />
                 </div>
               ))}
             </div>
-            <button onClick={() => updateInv(form)} disabled={updating}
-              className="mt-4 flex items-center gap-2 px-5 py-2.5 bg-[#2E7D32] hover:bg-[#2E7D32]/95 hover:shadow-[0_8px_20px_rgba(46,125,50,0.15)] text-white rounded-xl text-xs font-bold hover:-translate-y-0.5 active:scale-[0.98] transition-all duration-200 shadow-md disabled:opacity-60">
+            <button
+              onClick={() => updateInv(form)}
+              disabled={updating}
+              className="mt-4 flex items-center gap-2 px-5 py-2.5 bg-[#2E7D32] hover:bg-[#2E7D32]/95 hover:shadow-[0_8px_20px_rgba(46,125,50,0.15)] text-white rounded-xl text-xs font-bold hover:-translate-y-0.5 active:scale-[0.98] transition-all duration-200 shadow-md disabled:opacity-60"
+            >
               <Save size={14} /> {updating ? 'Đang lưu...' : 'Lưu cập nhật'}
             </button>
           </div>
@@ -251,24 +330,49 @@ ${invoice.otherFees > 0 ? `- *Phí khác (${invoice.otherNote || 'Không có'}):
 
               <div className="bg-[#E8F5E9]/50 border border-emerald-100 text-[#2E7D32] rounded-xl p-3.5 text-xs flex gap-2">
                 <span className="font-bold">Lưu ý Zalo:</span>
-                <span>Sau khi bấm "Gửi qua Zalo", nội dung tin nhắn sẽ tự động copy vào bộ nhớ tạm và mở Zalo khách trọ. Bạn chỉ cần bấm <strong>Ctrl+V</strong> và gửi đi.</span>
+                <span>Nội dung tin nhắn sẽ được sao chép vào bộ nhớ tạm. Nếu khách thuê có số điện thoại, ứng dụng sẽ mở chat Zalo để bạn dán tin nhắn. Nếu chỉ có Liên hệ Zalo, hệ thống sẽ hiển thị thông tin đó để bạn tự tìm đúng cuộc trò chuyện.</span>
               </div>
+
+              {(hasTenantPhone || hasTenantZaloContact) && (
+                <div className="grid gap-2 text-xs">
+                  {hasTenantPhone && (
+                    <div data-testid="notify-phone" className="rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-3 text-slate-600">
+                      <span className="block text-[10px] font-bold uppercase tracking-wider text-slate-400">Số điện thoại</span>
+                      <span className="mt-1 block font-semibold text-slate-700">{tenantPhone}</span>
+                    </div>
+                  )}
+                  {hasTenantZaloContact && (
+                    <div data-testid="notify-zalo-contact" className="rounded-xl border border-emerald-100 bg-[#F6FBF6] px-3.5 py-3 text-[#2E7D32]">
+                      <span className="block text-[10px] font-bold uppercase tracking-wider text-emerald-600/70">Liên hệ Zalo</span>
+                      <span className="mt-1 block font-semibold break-all">{tenantZaloContact}</span>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {!hasTenantPhone && (
+                <div data-testid="notify-missing-phone-note" className="rounded-xl border border-orange-200/70 bg-[#FFF7ED] px-3.5 py-3 text-xs text-[#B45309]">
+                  {hasTenantZaloContact
+                    ? 'Chưa lưu số điện thoại của khách thuê, vì vậy hệ thống không thể mở sẵn chat Zalo hoặc SMS. Bạn vẫn có thể sao chép nội dung và tự tìm đúng cuộc trò chuyện bằng thông tin Liên hệ Zalo.'
+                    : 'Chưa lưu số điện thoại hoặc thông tin Liên hệ Zalo của khách thuê. Bạn vẫn có thể sao chép nội dung để gửi thủ công qua kênh khác.'}
+                </div>
+              )}
             </div>
 
             <div className="px-6 py-4 border-t border-slate-100 bg-white/50 flex flex-wrap gap-2 justify-end">
-              <button onClick={handleCopyText} className="flex items-center gap-1.5 px-4 py-2 border border-slate-100 bg-white rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-50 active:scale-[0.98] transition-all duration-200">
+              <button onClick={handleCopyText} data-testid="notify-copy-btn" className="flex items-center gap-1.5 px-4 py-2 border border-slate-100 bg-white rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-50 active:scale-[0.98] transition-all duration-200">
                 {copied ? <Check size={13} className="text-green-600" /> : <Copy size={13} />}
                 {copied ? 'Đã copy!' : 'Copy tin nhắn'}
               </button>
 
-              <button onClick={handleSendSMS} className="flex items-center gap-1.5 px-4 py-2 border border-slate-100 bg-white rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-50 active:scale-[0.98] transition-all duration-200">
+              <button onClick={handleSendSMS} data-testid="notify-sms-btn" disabled={!hasTenantPhone} className="flex items-center gap-1.5 px-4 py-2 border border-slate-100 bg-white rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-50 active:scale-[0.98] transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-white">
                 <MessageSquare size={13} className="text-slate-500" />
                 Gửi SMS
               </button>
 
-              <button onClick={handleSendZalo} className="flex items-center gap-1.5 px-4 py-2 border border-emerald-200/50 rounded-xl text-xs font-bold bg-[#E8F5E9] hover:bg-[#E8F5E9]/80 text-[#2E7D32] transition-all duration-200 active:scale-[0.98]">
+              <button onClick={handleSendZalo} data-testid="notify-zalo-btn" disabled={disableZaloAction} className="flex items-center gap-1.5 px-4 py-2 border border-emerald-200/50 rounded-xl text-xs font-bold bg-[#E8F5E9] hover:bg-[#E8F5E9]/80 text-[#2E7D32] transition-all duration-200 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-[#E8F5E9]">
                 <Send size={13} />
-                Gửi qua Zalo
+                {hasTenantPhone ? 'Mở chat Zalo' : 'Sao chép cho Zalo'}
               </button>
 
               <button onClick={handleWebShare} className="flex items-center gap-1.5 px-4 py-2 border border-orange-200/50 rounded-xl text-xs font-bold bg-[#FFF3E0] hover:bg-[#FFE0B2] text-[#E65100] transition-all duration-200 active:scale-[0.98]">
@@ -278,7 +382,7 @@ ${invoice.otherFees > 0 ? `- *Phí khác (${invoice.otherNote || 'Không có'}):
 
               {settings?.webhookUrl && (
                 <button onClick={() => triggerWebhook()} disabled={notifying} className="flex items-center gap-1.5 px-4 py-2 bg-[#0052CC] hover:bg-[#0052CC]/90 text-white rounded-xl text-xs font-bold hover:-translate-y-0.5 active:scale-[0.98] transition-all duration-200 shadow-[0_4px_12px_rgba(0,82,204,0.15)] disabled:opacity-60">
-                  <Bell size={13} className={notifying ? "animate-pulse" : ""} />
+                  <Bell size={13} className={notifying ? 'animate-pulse' : ''} />
                   {notifying ? 'Đang gửi Webhook...' : 'Đẩy Webhook'}
                 </button>
               )}
@@ -289,3 +393,4 @@ ${invoice.otherFees > 0 ? `- *Phí khác (${invoice.otherNote || 'Không có'}):
     </div>
   );
 }
+

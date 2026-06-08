@@ -1,0 +1,12 @@
+ALTER TABLE "Tenant"
+ALTER COLUMN "phone" SET DEFAULT '';
+
+UPDATE "Tenant"
+SET "phone" = ''
+WHERE "phone" IS NULL;
+
+ALTER TABLE "Tenant"
+ALTER COLUMN "phone" SET NOT NULL;
+
+ALTER TABLE "Tenant"
+ADD COLUMN "zaloContact" TEXT NOT NULL DEFAULT '';

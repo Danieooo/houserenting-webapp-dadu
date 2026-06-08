@@ -29,7 +29,7 @@ Hệ thống được thiết kế với triết lý **Product-Grade** (Chất l
 
 #### Tiêu chí nghiệm thu (Acceptance Criteria)
 1. **Quản lý danh sách tiện lợi**: Hệ thống PHẢI cung cấp danh sách khách thuê dạng thẻ (Cards) hiện đại, hỗ trợ bộ lọc nhanh theo trạng thái hoạt động: Đang thuê (`Active`) hoặc Đã chuyển đi (`Inactive`).
-2. **Quy trình nhận phòng (Check-in)**: Khi thêm khách thuê mới vào một phòng trống (`AVAILABLE`), hệ thống PHẢI yêu cầu điền các thông tin: Họ tên, Số điện thoại, Số CCCD, Ngày bắt đầu ở (`moveInDate`), Số tiền đặt cọc (`deposit`), và Ngày dự kiến trả phòng (`moveOutDate` - tùy chọn). Sau khi lưu thành công, hệ thống PHẢI tự động chuyển trạng thái phòng đó sang `OCCUPIED`.
+2. **Quy trình nhận phòng (Check-in)**: Khi thêm khách thuê mới vào một phòng trống (`AVAILABLE`), hệ thống PHẢI yêu cầu điền các thông tin: Họ tên, Ngày bắt đầu ở (`moveInDate`), Số tiền đặt cọc (`deposit`), và CÓ THỂ nhập thêm Số điện thoại, Thông tin liên hệ Zalo (`zaloContact`), Số CCCD, cùng Ngày dự kiến trả phòng (`moveOutDate` - tùy chọn). Sau khi lưu thành công, hệ thống PHẢI tự động chuyển trạng thái phòng đó sang `OCCUPIED`.
 3. **Ngăn chặn trùng lặp**: NẾU chủ trọ cố tình xếp khách vào một phòng đã có người (`OCCUPIED`), hệ thống PHẢI ngăn chặn hành vi và hiển thị cảnh báo lỗi `ROOM_OCCUPIED`.
 4. **Upload tài liệu đám mây**: Trong trang chi tiết khách thuê, hệ thống PHẢI cung cấp khu vực kéo thả (Dropzone) để upload các tệp đính kèm như ảnh CCCD mặt trước/sau, bản chụp hợp đồng thuê nhà. Các tệp này PHẢI được tải trực tiếp lên Cloudinary và lưu liên kết an toàn dưới dạng các bản ghi `TenantFile`.
 5. **Quy trình trả phòng an toàn (Check-out)**: Khi khách thuê kết thúc hợp đồng, chủ trọ CÓ THỂ nhấn nút "Trả phòng" (hoặc xóa khách thuê). Hệ thống PHẢI thực hiện **Soft Delete** bằng cách chuyển trạng thái của khách thuê sang `active = false` (lưu trữ lịch sử) và tự động giải phóng trạng thái phòng tương ứng về trống (`AVAILABLE`).
@@ -126,11 +126,11 @@ Hệ thống được thiết kế với triết lý **Product-Grade** (Chất l
    - Kịch bản PHẢI sử dụng `pg_dump` để xuất bản sao lưu đầy đủ cơ sở dữ liệu Neon PostgreSQL và tự động tải lên thư mục Google Drive của chủ trọ thông qua Google API Service Account.
 2. **Giao diện Gửi thông báo nhắc nợ hóa đơn**:
    - Trong trang chi tiết hóa đơn, hệ thống PHẢI cung cấp nút **"Gửi thông báo"**.
-   - Khi nhấn nút, hệ thống PHẢI hiển thị hộp thoại xem trước (Modal Preview) nội dung tin nhắn được biên soạn tự động rất trực quan chứa đầy đủ thông tin: tên nhà trọ, số phòng, khách thuê, chỉ số điện/nước cũ và mới, tổng số tiền, hướng dẫn thanh toán và đường dẫn link xem hóa đơn trực tuyến.
+   - Khi nhấn nút, hệ thống PHẢI hiển thị hộp thoại xem trước (Modal Preview) nội dung tin nhắn được biên soạn tự động rất trực quan chứa đầy đủ thông tin: tên nhà trọ, số phòng, khách thuê, chỉ số điện/nước cũ và mới, tổng số tiền, và hướng dẫn thanh toán. Modal này PHẢI đồng thời hiển thị thông tin liên hệ sẵn có của khách thuê (`phone`, `zaloContact`) để chủ trọ chọn đúng kênh liên lạc.
 3. **Tính năng chia sẻ đa kênh tiện lợi**:
    - Hộp thoại PHẢI cung cấp 4 tùy chọn chia sẻ:
      - **Copy tin nhắn**: Sao chép nội dung đã được định dạng.
-     - **Gửi qua Zalo**: Tự động sao chép tin nhắn vào clipboard và mở khung chat Zalo tương ứng với số điện thoại của khách thuê.
+     - **Gửi qua Zalo**: Tự động sao chép tin nhắn vào clipboard và mở khung chat Zalo tương ứng với số điện thoại của khách thuê NẾU trường `phone` có dữ liệu. NẾU không có `phone` nhưng có `zaloContact`, hệ thống PHẢI vẫn sao chép tin nhắn và hiển thị rõ thông tin `zaloContact` để chủ trọ tự mở đúng cuộc trò chuyện. Hệ thống KHÔNG ĐƯỢC cam kết tự động chèn và gửi nội dung tin nhắn trực tiếp vào Zalo nếu nền tảng Zalo không hỗ trợ cơ chế đó một cách ổn định.
      - **Gửi SMS**: Mở ứng dụng gửi tin nhắn SMS mặc định trên điện thoại với tin soạn sẵn đầy đủ (loại bỏ các dấu sao markdown để tương thích tối đa).
      - **Chia sẻ nhanh**: Sử dụng Web Share API của hệ điều hành để chia sẻ trực tiếp sang Messenger, Viber, Gmail,... trên thiết bị di động.
 4. **Tích hợp Webhook đẩy dữ liệu tự động**:

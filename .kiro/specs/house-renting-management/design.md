@@ -80,6 +80,7 @@ Hệ thống giao diện được tổ chức thành các trang và thành phầ
 - **Trang chi tiết**: Hiển thị thẻ thông tin phòng, thông tin liên lạc của khách thuê hiện tại (nếu có), và bảng lịch sử hóa đơn kèm phân trang.
 
 ### 4. Tenant Management Pages (`TenantsPage.jsx` & `TenantDetailPage.jsx`)
+ - **Yêu cầu liên hệ**: Hệ thống hiển thị tách biệt thông tin `phone` và `zaloContact` để chủ trọ không phải nhồi mọi kênh liên hệ vào cùng một trường và vẫn nhận diện đúng khách khi không có số điện thoại.
 - **Trang danh sách**: Thiết kế dạng Grid Card hiện đại thể hiện chân dung khách thuê, số điện thoại, tên phòng đang ở và tiền đặt cọc.
 - **Trang chi tiết**: 
   - Thẻ thông tin cá nhân và hợp đồng chi tiết.
@@ -87,6 +88,7 @@ Hệ thống giao diện được tổ chức thành các trang và thành phầ
   - Nút hành động "Trả phòng" kích hoạt Dialog xác nhận để chuyển trạng thái an toàn.
 
 ### 5. Invoice Management Pages (`InvoicesPage.jsx` & `InvoiceDetailPage.jsx` & `InvoiceCreatePage.jsx`)
+ - **Modal gửi thông báo**: Luồng chia sẻ PHẢI phân nhánh theo dữ liệu liên hệ của khách thuê: luôn cho phép sao chép nội dung, chỉ mở chat Zalo/SMS khi có số điện thoại, và hiển thị `zaloContact` như thông tin hỗ trợ tìm đúng tài khoản khi không có `phone`.
 - **Trang danh sách**: Quản lý bộ lọc thông minh theo Tháng/Năm, theo phòng và trạng thái thanh toán.
 - **Màn hình Tạo hóa đơn hàng loạt**: Giao diện tối ưu hóa nhập liệu. Chủ trọ chọn tháng/năm, hệ thống tự động render danh sách các phòng trọ đang có khách thuê, hiển thị chỉ số điện/nước cũ và ô để nhập nhanh chỉ số mới.
 - **Trang chi tiết hóa đơn**:
@@ -166,7 +168,8 @@ model Room {
 model Tenant {
   id          Int          @id @default(autoincrement())
   name        String
-  phone       String
+  phone       String       @default("")
+  zaloContact String       @default("")
   idCard      String?
   roomId      Int
   room        Room         @relation(fields: [roomId], references: [id])
@@ -294,6 +297,7 @@ Các mã lỗi nghiệp vụ quy định:
   - Bắt các lỗi mạng hoặc API thất bại, tự động hiển thị Toast thông báo lỗi tiếng Việt thông qua thư viện `sonner` mà không làm gián đoạn luồng làm việc hiện tại của người dùng.
 - **Form Inline Errors**:
   - Kết hợp `react-hook-form` và `zod` để validate dữ liệu ngay tại client. Chỉ cho phép gửi request lên API khi toàn bộ các trường dữ liệu hợp lệ. Hiển thị thông báo lỗi màu đỏ ngay dưới chân từng ô nhập liệu bị sai.
+  - Trường `phone` của khách thuê không còn là bắt buộc; chỉ validate định dạng khi người dùng thực sự nhập dữ liệu. Trường `zaloContact` là tùy chọn dạng text tự do có giới hạn độ dài.
 
 ---
 
@@ -361,8 +365,10 @@ Hệ thống thông báo áp dụng phương pháp tiếp cận hai tầng:
 
 - **Tầng 1: Click-to-Send Client-side (Miễn phí & Không cần thiết lập)**:
   - Tích hợp Web Share API trực tiếp trên trình duyệt thiết bị di động để mở Native Share Sheet.
-  - Sử dụng Zalo URL scheme (`https://zalo.me/${phone}`) kết hợp clipboard sao chép tự động giúp chuyển giao tin nhắn cực nhanh.
-  - Sử dụng SMS URL scheme (`sms:${phone}?body=${text}`) mở ứng dụng nhắn tin mặc định.
+  - Sử dụng Zalo URL scheme (`https://zalo.me/${phone}`) kết hợp clipboard sao chép tự động giúp chuyển giao tin nhắn cực nhanh khi tenant có số điện thoại.
+  - Nếu tenant không có `phone` nhưng có `zaloContact`, modal PHẢI vẫn sao chép tin nhắn và hiển thị rõ `zaloContact` để chủ trọ tự tìm đúng cuộc trò chuyện.
+  - Sử dụng SMS URL scheme (`sms:${phone}?body=${text}`) mở ứng dụng nhắn tin mặc định khi tenant có số điện thoại; nếu không có thì hành động SMS PHẢI bị vô hiệu hóa.
+  - Thiết kế phải thừa nhận giới hạn nền tảng: ứng dụng web không thể đảm bảo tự động đổ nội dung tin nhắn vào khung chat Zalo và gửi đi một cách ổn định trên mọi môi trường.
 - **Tầng 2: Webhook Đẩy tự động (Automated Backend Webhook)**:
   - API backend `/api/invoices/:id/notify` nhận yêu cầu, lấy thông tin cấu hình `webhookUrl` trong bảng `Settings` và tự động gửi gói tin POST JSON.
   - Tương thích định dạng thông điệp Discord Embed và cấu trúc JSON chuẩn hóa dành cho các cổng tự động hóa Make/n8n.
