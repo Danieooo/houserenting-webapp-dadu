@@ -1,4 +1,5 @@
-﻿# Changelog
+# Changelog
+# Changelog
 
 All notable changes to the **House Renting App** project will be documented in this file.
 
@@ -8,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Tauri Desktop Integration & CORS Adjustments**:
+  - Khởi tạo cấu hình Tauri v2 trong `frontend/` cho phép đóng gói ứng dụng React + Vite thành Desktop App (.exe, .msi, và portable app.exe) trên Windows.
+  - Cập nhật cấu hình CORS trong `backend/src/index.js` để cho phép các origin của Desktop app (`tauri://localhost`, `http://tauri.localhost`, `http://localhost:5173`) truy cập API backend không bị chặn.
+  - Thêm các lệnh `"tauri"`, `"tauri:dev"`, và `"tauri:build"` vào `frontend/package.json` cùng việc bổ sung `@tauri-apps/cli` vào devDependencies.
 - **Tenant Contact Flexibility & Zalo Notification UX**:
   - Them truong `zaloContact` va noi `phone` thanh du lieu tuy chon xuyen suot backend/frontend de phan anh dung truong hop khach chi lien he qua Zalo.
   - Bo sung kich ban E2E moi [notification-zalo-fallback.spec.js](file:///c:/Users/Duyen/Documents/GitHub/houserenting-app/frontend/e2e/notification-zalo-fallback.spec.js) cho nhanh khong co `phone` nhung co `zaloContact`.
